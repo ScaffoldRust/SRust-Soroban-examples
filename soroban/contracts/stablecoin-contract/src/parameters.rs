@@ -22,7 +22,8 @@ pub fn init_parameters(env: &Env, params: StablecoinParameters) {
 
 // Get current parameters
 pub fn get_parameters(env: &Env) -> StablecoinParameters {
-    env.storage().instance()
+    env.storage()
+        .instance()
         .get(&DataKey::Parameters)
         .unwrap_or(StablecoinParameters {
             min_collateral_ratio: 15000, // 150%
