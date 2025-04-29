@@ -1,0 +1,19 @@
+[package]
+name = "payment-streaming-contract"
+version = "0.1.0"
+description = "Soroban smart contract for payment streaming and micropayment channels"
+edition = "2021"
+publish = false
+# repository = "[invalid url, do not cite]
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+
