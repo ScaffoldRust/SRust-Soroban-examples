@@ -85,3 +85,6 @@ impl StablecoinContract {
         governance::execute_proposal(&env, executor, proposal_id);
     }
 }
+
+#[cfg(test)]
+mod test;

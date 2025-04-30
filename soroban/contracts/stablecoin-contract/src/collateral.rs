@@ -9,17 +9,15 @@ pub struct CollateralAsset {
     pub reserve: i128,      // Total collateral reserve
 }
 
-// Key used to store user collateral mappings
 #[contracttype]
 pub enum DataKey {
-    CollateralReserve(Symbol),       // Total reserves per asset
-    UserCollateral(Address, Symbol), // Collateral per user per asset
+    CollateralReserve(Symbol),
+    UserCollateral(Address, Symbol),
 }
 
-// Adds collateral to the protocol and user balance
-pub fn deposit_collateral(env: &Env, user: Address, asset: Symbol, amount: i128) {
+// Internal function to deposit collateral without auth
+pub fn deposit_collateral_internal(env: &Env, user: Address, asset: Symbol, amount: i128) {
     assert!(amount > 0, "Amount must be positive");
-    user.require_auth();
 
     // Increase user's collateral
     let key = DataKey::UserCollateral(user.clone(), asset.clone());
@@ -36,6 +34,12 @@ pub fn deposit_collateral(env: &Env, user: Address, asset: Symbol, amount: i128)
     env.storage()
         .instance()
         .set(&reserve_key, &(reserve + amount));
+}
+
+// Public function to deposit collateral with auth
+pub fn deposit_collateral(env: &Env, user: Address, asset: Symbol, amount: i128) {
+    user.require_auth();
+    deposit_collateral_internal(env, user, asset, amount);
 }
 
 // Withdraws collateral from user balance and total reserve

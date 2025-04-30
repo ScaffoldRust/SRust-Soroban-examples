@@ -1,6 +1,6 @@
 // stablecoin-contract/src/burn.rs
 
-use crate::collateral::deposit_collateral;
+use crate::collateral::deposit_collateral_internal; // Updated import
 use crate::parameters::get_parameters;
 use soroban_sdk::{contracttype, Address, Env, Symbol};
 
@@ -31,6 +31,6 @@ pub fn burn(env: &Env, user: Address, amount: i128, asset: Symbol) {
         .checked_div(10_000u128)
         .unwrap() as i128;
 
-    // Return collateral to user
-    deposit_collateral(env, user, asset, collateral_to_return);
+    // Return collateral to user without additional auth
+    deposit_collateral_internal(env, user, asset, collateral_to_return);
 }
