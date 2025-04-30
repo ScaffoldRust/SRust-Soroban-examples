@@ -5,7 +5,6 @@ mod compliance;
 mod fees;
 mod fx;
 mod settlement;
-mod test;
 mod transfer;
 mod types;
 
