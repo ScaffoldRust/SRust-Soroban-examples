@@ -1,5 +1,5 @@
 use crate::types::*;
-use soroban_sdk::{Address, BytesN, Env};
+use soroban_sdk::{Address, BytesN, Env, Symbol};
 
 pub fn verify_compliance(env: Env, user: Address, documents: BytesN<32>) {
     user.require_auth();
@@ -8,12 +8,22 @@ pub fn verify_compliance(env: Env, user: Address, documents: BytesN<32>) {
     let compliance = ComplianceData {
         kyc_verified: true,
         aml_verified: true,
-        verification_documents: documents,
+        verification_documents: documents.clone(),
     };
 
     env.storage()
         .instance()
-        .set(&DataKey::Compliance(user), &compliance);
+        .set(&DataKey::Compliance(user.clone()), &compliance);
+
+    env.events().publish(
+        (Symbol::new(&env, "ComplianceVerified"),),
+        (
+            user,
+            compliance.kyc_verified,
+            compliance.aml_verified,
+            documents,
+        ),
+    );
 }
 
 pub fn is_compliant(env: &Env, user: &Address) -> bool {

@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Symbol};
 
 mod compliance;
 mod fees;
@@ -38,6 +38,11 @@ impl CrossBorderPayment {
         env.storage()
             .instance()
             .set(&DataKey::NextTransferId, &1u64);
+
+        env.events().publish(
+            (Symbol::new(&env, "Initialized"),),
+            (admin, base_fee, percentage, urgency_multiplier),
+        );
     }
 
     // Transfer functions

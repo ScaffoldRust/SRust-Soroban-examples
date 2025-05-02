@@ -13,6 +13,16 @@ pub fn update_fx_rate(env: Env, source_currency: String, target_currency: String
         &DataKey::ExchangeRate(source_currency, target_currency),
         &fx_rate,
     );
+
+    env.events().publish(
+        (Symbol::new(&env, "ExchangeRateUpdated"),),
+        (
+            source_currency,
+            target_currency,
+            fx_rate.rate,
+            fx_rate.timestamp,
+        ),
+    );
 }
 
 pub fn get_fx_rate(env: Env, source_currency: String, target_currency: String) -> i128 {

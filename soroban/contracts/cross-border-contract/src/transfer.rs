@@ -1,5 +1,5 @@
 use crate::types::*;
-use soroban_sdk::{Address, Env, String, Vec};
+use soroban_sdk::{Address, Env, String, Symbol, Vec};
 
 pub fn initiate_transfer(
     env: Env,
@@ -48,6 +48,18 @@ pub fn initiate_transfer(
     env.storage()
         .instance()
         .set(&DataKey::TransferHistory, &history);
+
+    env.events().publish(
+        (Symbol::new(&env, "TransferInitiated"),),
+        (
+            transfer_id,
+            transfer.sender,
+            transfer.recipient,
+            transfer.amount,
+            transfer.currency,
+            transfer.destination_network,
+        ),
+    );
 
     transfer_id
 }

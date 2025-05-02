@@ -1,5 +1,6 @@
 use crate::compliance;
 use crate::types::*;
+use soroban_sdk::Symbol;
 use soroban_sdk::{Address, Env};
 
 pub fn execute_settlement(env: Env, transfer_id: u64, org: Address) {
@@ -41,6 +42,17 @@ pub fn execute_settlement(env: Env, transfer_id: u64, org: Address) {
         &DataKey::Settlement(transfer_id),
         &SettlementStatus::Settled,
     );
+
+    env.events().publish(
+        (Symbol::new(&env, "TransferSettled"),),
+        (
+            transfer_id,
+            org,
+            transfer.amount,
+            transfer.currency,
+            transfer.destination_network,
+        ),
+    );
 }
 
 pub fn refund_transfer(env: Env, transfer_id: u64, org: Address) {
@@ -62,7 +74,8 @@ pub fn refund_transfer(env: Env, transfer_id: u64, org: Address) {
         &SettlementStatus::Refunded,
     );
 
-    // In practice, initiate refund to sender's account
+    env.events()
+        .publish((Symbol::new(&env, "TransferRefunded"),), (transfer_id, org));
 }
 
 pub fn get_transfer_status(env: Env, transfer_id: u64) -> SettlementStatus {
