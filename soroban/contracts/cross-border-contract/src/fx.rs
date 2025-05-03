@@ -1,5 +1,5 @@
 use crate::types::*;
-use soroban_sdk::{Env, String};
+use soroban_sdk::{Env, String, Symbol};
 
 pub fn update_fx_rate(env: Env, source_currency: String, target_currency: String, rate: i128) {
     // In practice, restrict this to an authorized oracle or admin
@@ -10,7 +10,7 @@ pub fn update_fx_rate(env: Env, source_currency: String, target_currency: String
         timestamp: env.ledger().timestamp(),
     };
     env.storage().instance().set(
-        &DataKey::ExchangeRate(source_currency, target_currency),
+        &DataKey::ExchangeRate(source_currency.clone(), target_currency.clone()),
         &fx_rate,
     );
 

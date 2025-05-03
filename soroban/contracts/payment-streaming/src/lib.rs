@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, Vec};
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env};
 
 mod stream;
 mod withdraw;
@@ -9,8 +9,7 @@ mod voucher;
 mod balance;
 mod error;
 use crate::voucher::SignedVoucher; 
-use stream::{Stream, StreamState, PaymentSchedule, TimeUnit};
-use channel::{PaymentChannel};
+use stream::{ StreamState, PaymentSchedule};
 
 #[contract]
 pub struct PaymentStreamingContract;
