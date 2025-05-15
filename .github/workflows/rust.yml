@@ -11,14 +11,19 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Build Cargo
       run: cargo build --verbose
+      working-directory: soroban
+
     - name: Build Stellar
       run: stellar contract build --verbose
+      working-directory: soroban
+
     - name: Run tests
       run: cargo test --verbose
+      working-directory: soroban
