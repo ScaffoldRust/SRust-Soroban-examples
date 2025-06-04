@@ -1,4 +1,4 @@
-name: Rust
+name: Soroban Smart Contract CI
 
 on:
   push:
@@ -16,14 +16,30 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Build Cargo
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Install Stellar CLI (Soroban CLI)
+      run: |
+        curl -L https://github.com/stellar/stellar-cli/releases/latest/download/stellar-x86_64-unknown-linux-gnu.tar.gz -o stellar.tar.gz
+        tar -xvzf stellar.tar.gz
+        sudo mv stellar /usr/local/bin/
+        stellar --version
+
+    - name: Install Rust target for Soroban
+      run: rustup target add wasm32-unknown-unknown
+
+    - name: Build Cargo project
       run: cargo build --verbose
       working-directory: soroban
 
-    - name: Build Stellar
+    - name: Build Soroban contract
       run: stellar contract build --verbose
       working-directory: soroban
 
-    - name: Run tests
+    - name: Run Cargo tests
       run: cargo test --verbose
       working-directory: soroban
