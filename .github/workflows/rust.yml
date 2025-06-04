@@ -22,15 +22,14 @@ jobs:
         toolchain: stable
         override: true
 
-    - name: Install Stellar CLI (Soroban CLI)
-      run: |
-        curl -L https://github.com/stellar/stellar-cli/releases/latest/download/stellar-x86_64-unknown-linux-gnu.tar.gz -o stellar.tar.gz
-        tar -xvzf stellar.tar.gz
-        sudo mv stellar /usr/local/bin/
-        stellar --version
-
     - name: Install Rust target for Soroban
       run: rustup target add wasm32-unknown-unknown
+      
+    - name: Install Stellar CLI (Soroban CLI)
+      run: |
+        cargo install --locked stellar-cli@22.8.1 --features opt
+        sudo mv stellar /usr/local/bin/
+        stellar --version
 
     - name: Build Cargo project
       run: cargo build --verbose
