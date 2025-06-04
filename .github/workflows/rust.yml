@@ -28,7 +28,6 @@ jobs:
     - name: Install Stellar CLI (Soroban CLI)
       run: |
         cargo install --locked stellar-cli@22.8.1 --features opt
-        sudo mv stellar /usr/local/bin/
         stellar --version
 
     - name: Build Cargo project
