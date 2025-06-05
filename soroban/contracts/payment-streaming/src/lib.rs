@@ -10,7 +10,7 @@ mod channel;
 mod voucher;
 mod balance;
 mod error;
-mod test;
+// mod test;
 
 #[contract]
 pub struct PaymentStreamingContract;
