@@ -49,9 +49,3 @@ jobs:
         source $HOME/.cargo/env
         cargo test --verbose
       working-directory: soroban
-
-    - name: Run Soroban tests
-      run: |
-        source $HOME/.cargo/env
-        stellar test
-      working-directory: soroban
