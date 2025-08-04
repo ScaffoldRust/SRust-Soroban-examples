@@ -54,14 +54,14 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 5000
                   }
                 },
                 {
                   "string": "USD"
                 },
                 {
-                  "string": "CA"
+                  "string": "EU"
                 }
               ]
             }
@@ -70,6 +70,7 @@
         }
       ]
     ],
+    [],
     []
   ],
   "ledger": {
@@ -196,7 +197,7 @@
                               "val": {
                                 "i128": {
                                   "hi": 0,
-                                  "lo": 3000
+                                  "lo": 5000
                                 }
                               }
                             },
@@ -213,7 +214,7 @@
                                 "symbol": "destination_network"
                               },
                               "val": {
-                                "string": "CA"
+                                "string": "EU"
                               }
                             },
                             {
@@ -262,7 +263,7 @@
                                   "val": {
                                     "i128": {
                                       "hi": 0,
-                                      "lo": 3000
+                                      "lo": 5000
                                     }
                                   }
                                 },
@@ -279,7 +280,7 @@
                                     "symbol": "destination_network"
                                   },
                                   "val": {
-                                    "string": "CA"
+                                    "string": "EU"
                                   }
                                 },
                                 {

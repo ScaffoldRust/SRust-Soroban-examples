@@ -54,14 +54,37 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 4500
                   }
                 },
                 {
-                  "string": "USD"
+                  "string": "CHF"
                 },
                 {
-                  "string": "CA"
+                  "string": "JP"
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [],
+    [
+      [
+        "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "function_name": "refund_transfer",
+              "args": [
+                {
+                  "u64": 1
+                },
+                {
+                  "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
                 }
               ]
             }
@@ -171,7 +194,7 @@
                         "val": {
                           "vec": [
                             {
-                              "symbol": "Pending"
+                              "symbol": "Refunded"
                             }
                           ]
                         }
@@ -196,7 +219,7 @@
                               "val": {
                                 "i128": {
                                   "hi": 0,
-                                  "lo": 3000
+                                  "lo": 4500
                                 }
                               }
                             },
@@ -205,7 +228,7 @@
                                 "symbol": "currency"
                               },
                               "val": {
-                                "string": "USD"
+                                "string": "CHF"
                               }
                             },
                             {
@@ -213,7 +236,7 @@
                                 "symbol": "destination_network"
                               },
                               "val": {
-                                "string": "CA"
+                                "string": "JP"
                               }
                             },
                             {
@@ -262,7 +285,7 @@
                                   "val": {
                                     "i128": {
                                       "hi": 0,
-                                      "lo": 3000
+                                      "lo": 4500
                                     }
                                   }
                                 },
@@ -271,7 +294,7 @@
                                     "symbol": "currency"
                                   },
                                   "val": {
-                                    "string": "USD"
+                                    "string": "CHF"
                                   }
                                 },
                                 {
@@ -279,7 +302,7 @@
                                     "symbol": "destination_network"
                                   },
                                   "val": {
-                                    "string": "CA"
+                                    "string": "JP"
                                   }
                                 },
                                 {
