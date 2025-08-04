@@ -54,7 +54,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 1000
                   }
                 },
                 {
@@ -70,6 +70,41 @@
         }
       ]
     ],
+    [
+      [
+        "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "function_name": "initiate_transfer",
+              "args": [
+                {
+                  "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                },
+                {
+                  "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                },
+                {
+                  "i128": {
+                    "hi": 0,
+                    "lo": 2000
+                  }
+                },
+                {
+                  "string": "CAD"
+                },
+                {
+                  "string": "US"
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [],
     []
   ],
   "ledger": {
@@ -154,7 +189,7 @@
                           ]
                         },
                         "val": {
-                          "u64": 2
+                          "u64": 3
                         }
                       },
                       {
@@ -165,6 +200,25 @@
                             },
                             {
                               "u64": 1
+                            }
+                          ]
+                        },
+                        "val": {
+                          "vec": [
+                            {
+                              "symbol": "Pending"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "Settlement"
+                            },
+                            {
+                              "u64": 2
                             }
                           ]
                         },
@@ -196,7 +250,7 @@
                               "val": {
                                 "i128": {
                                   "hi": 0,
-                                  "lo": 3000
+                                  "lo": 1000
                                 }
                               }
                             },
@@ -247,6 +301,73 @@
                         "key": {
                           "vec": [
                             {
+                              "symbol": "Transfer"
+                            },
+                            {
+                              "u64": 2
+                            }
+                          ]
+                        },
+                        "val": {
+                          "map": [
+                            {
+                              "key": {
+                                "symbol": "amount"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 2000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "currency"
+                              },
+                              "val": {
+                                "string": "CAD"
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "destination_network"
+                              },
+                              "val": {
+                                "string": "US"
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "recipient"
+                              },
+                              "val": {
+                                "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "sender"
+                              },
+                              "val": {
+                                "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "timestamp"
+                              },
+                              "val": {
+                                "u64": 0
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": {
+                          "vec": [
+                            {
                               "symbol": "TransferHistory"
                             }
                           ]
@@ -262,7 +383,7 @@
                                   "val": {
                                     "i128": {
                                       "hi": 0,
-                                      "lo": 3000
+                                      "lo": 1000
                                     }
                                   }
                                 },
@@ -280,6 +401,61 @@
                                   },
                                   "val": {
                                     "string": "CA"
+                                  }
+                                },
+                                {
+                                  "key": {
+                                    "symbol": "recipient"
+                                  },
+                                  "val": {
+                                    "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                                  }
+                                },
+                                {
+                                  "key": {
+                                    "symbol": "sender"
+                                  },
+                                  "val": {
+                                    "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                                  }
+                                },
+                                {
+                                  "key": {
+                                    "symbol": "timestamp"
+                                  },
+                                  "val": {
+                                    "u64": 0
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "map": [
+                                {
+                                  "key": {
+                                    "symbol": "amount"
+                                  },
+                                  "val": {
+                                    "i128": {
+                                      "hi": 0,
+                                      "lo": 2000
+                                    }
+                                  }
+                                },
+                                {
+                                  "key": {
+                                    "symbol": "currency"
+                                  },
+                                  "val": {
+                                    "string": "CAD"
+                                  }
+                                },
+                                {
+                                  "key": {
+                                    "symbol": "destination_network"
+                                  },
+                                  "val": {
+                                    "string": "US"
                                   }
                                 },
                                 {

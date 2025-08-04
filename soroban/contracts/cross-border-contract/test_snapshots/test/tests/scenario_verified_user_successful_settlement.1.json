@@ -43,6 +43,29 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "function_name": "verify_compliance",
+              "args": [
+                {
+                  "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                },
+                {
+                  "bytes": "babababababababababababababababababababababababababababababababa"
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [],
+    [
+      [
+        "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
               "function_name": "initiate_transfer",
               "args": [
                 {
@@ -54,14 +77,38 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 10000
                   }
                 },
                 {
                   "string": "USD"
                 },
                 {
-                  "string": "CA"
+                  "string": "EUROZONE"
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [],
+    [],
+    [
+      [
+        "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "function_name": "execute_settlement",
+              "args": [
+                {
+                  "u64": 1
+                },
+                {
+                  "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
                 }
               ]
             }
@@ -105,6 +152,100 @@
                       "wasm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
                     },
                     "storage": [
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "Compliance"
+                            },
+                            {
+                              "address": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+                            }
+                          ]
+                        },
+                        "val": {
+                          "map": [
+                            {
+                              "key": {
+                                "symbol": "aml_verified"
+                              },
+                              "val": {
+                                "bool": true
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "kyc_verified"
+                              },
+                              "val": {
+                                "bool": true
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "verification_documents"
+                              },
+                              "val": {
+                                "bytes": "babababababababababababababababababababababababababababababababa"
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "ExchangeRate"
+                            },
+                            {
+                              "string": "USD"
+                            },
+                            {
+                              "string": "EUR"
+                            }
+                          ]
+                        },
+                        "val": {
+                          "map": [
+                            {
+                              "key": {
+                                "symbol": "rate"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 850000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "source_currency"
+                              },
+                              "val": {
+                                "string": "USD"
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "target_currency"
+                              },
+                              "val": {
+                                "string": "EUR"
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "timestamp"
+                              },
+                              "val": {
+                                "u64": 0
+                              }
+                            }
+                          ]
+                        }
+                      },
                       {
                         "key": {
                           "vec": [
@@ -171,7 +312,7 @@
                         "val": {
                           "vec": [
                             {
-                              "symbol": "Pending"
+                              "symbol": "Settled"
                             }
                           ]
                         }
@@ -196,7 +337,7 @@
                               "val": {
                                 "i128": {
                                   "hi": 0,
-                                  "lo": 3000
+                                  "lo": 10000
                                 }
                               }
                             },
@@ -213,7 +354,7 @@
                                 "symbol": "destination_network"
                               },
                               "val": {
-                                "string": "CA"
+                                "string": "EUROZONE"
                               }
                             },
                             {
@@ -262,7 +403,7 @@
                                   "val": {
                                     "i128": {
                                       "hi": 0,
-                                      "lo": 3000
+                                      "lo": 10000
                                     }
                                   }
                                 },
@@ -279,7 +420,7 @@
                                     "symbol": "destination_network"
                                   },
                                   "val": {
-                                    "string": "CA"
+                                    "string": "EUROZONE"
                                   }
                                 },
                                 {

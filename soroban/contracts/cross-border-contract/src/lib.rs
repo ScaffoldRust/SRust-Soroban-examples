@@ -8,6 +8,9 @@ mod settlement;
 mod transfer;
 mod types;
 
+#[cfg(test)]
+mod test;
+
 pub use compliance::*;
 pub use fees::*;
 pub use fx::*;
