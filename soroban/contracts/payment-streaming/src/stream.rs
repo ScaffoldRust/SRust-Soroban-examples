@@ -54,11 +54,14 @@ pub fn create_stream(
     }
 
     sender.require_auth();
-    
-    let stream_id = env.storage().instance().get(&STREAM_KEY)
-        .unwrap_or(BytesN::from_array(&env, &[0; 32]));    
 
-    let _new_stream_id = increment_bytesn(&env, stream_id.clone());
+    let current_stream_id = env
+        .storage()
+        .instance()
+        .get(&STREAM_KEY)
+        .unwrap_or(BytesN::from_array(&env, &[0; 32]));
+
+    let stream_id = increment_bytesn(&env, current_stream_id);
     let stream = Stream {
         sender,
         recipient,
@@ -72,16 +75,19 @@ pub fn create_stream(
 
     env.storage().persistent().set(&stream_id, &stream);
     env.storage().instance().set(&STREAM_KEY, &stream_id);
-    
+
     stream_id
 }
 
 pub fn cancel_stream(env: &Env, stream_id: BytesN<32>) {
-    let mut stream: Stream = env.storage().persistent().get(&stream_id)
-        .unwrap_or_else(|| panic_with_error!(env,PaymentStreamingError::StreamNotFound));
-    
+    let mut stream: Stream = env
+        .storage()
+        .persistent()
+        .get(&stream_id)
+        .unwrap_or_else(|| panic_with_error!(env, PaymentStreamingError::StreamNotFound));
+
     stream.sender.require_auth();
-    
+
     if !stream.is_active {
         panic_with_error!(env, PaymentStreamingError::StreamNotActive);
     }
@@ -91,13 +97,16 @@ pub fn cancel_stream(env: &Env, stream_id: BytesN<32>) {
 }
 
 pub fn pause_stream(env: &Env, stream_id: BytesN<32>) {
-    let mut stream: Stream = env.storage().persistent().get(&stream_id)
+    let mut stream: Stream = env
+        .storage()
+        .persistent()
+        .get(&stream_id)
         .unwrap_or_else(|| panic_with_error!(env, PaymentStreamingError::StreamNotFound));
-    
+
     stream.sender.require_auth();
-    
+
     if !stream.is_active {
-        panic_with_error!(env,PaymentStreamingError::StreamAllreadyPaused);
+        panic_with_error!(env, PaymentStreamingError::StreamAllreadyPaused);
     }
 
     stream.is_active = false;

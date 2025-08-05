@@ -1,16 +1,17 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, Vec};
-use crate::voucher::SignedVoucher; 
-use stream::{Stream, StreamState, PaymentSchedule, TimeUnit};
-use channel::{PaymentChannel};
+use crate::voucher::SignedVoucher;
 
-mod stream;
-mod withdraw;
-mod channel;
-mod voucher;
+use soroban_sdk::{contract, contractimpl, Address, BytesN, Env};
+use stream::{PaymentSchedule, StreamState};
+
 mod balance;
+mod channel;
 mod error;
-// mod test;
+mod stream;
+#[cfg(test)]
+mod test;
+mod voucher;
+mod withdraw;
 
 #[contract]
 pub struct PaymentStreamingContract;
@@ -46,13 +47,18 @@ impl PaymentStreamingContract {
     }
 
     // Channel functions
-    pub fn open_channel(env: Env, counterparty: Address, deposit: i128) -> BytesN<32> {
-        channel::open_channel(&env, counterparty, deposit)
+    pub fn open_channel(
+        env: Env,
+        sender: Address,
+        counterparty: Address,
+        deposit: i128,
+    ) -> BytesN<32> {
+        channel::open_channel(&env, sender, counterparty, deposit)
     }
 
     pub fn sign_payment(
-        env: Env, 
-        channel_id: BytesN<32>, 
+        env: Env,
+        channel_id: BytesN<32>,
         increment_amount: i128,
         caller: BytesN<32>, // Ed25519 public key
         signature: BytesN<64>,

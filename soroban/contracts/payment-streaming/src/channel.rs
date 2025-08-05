@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, panic_with_error, Address,BytesN, Env};
+use soroban_sdk::{contracttype, panic_with_error, Address, BytesN, Env};
 
 use crate::error::PaymentStreamingError;
 
@@ -16,20 +16,27 @@ pub struct PaymentChannel {
 
 const CHANNEL_KEY: &str = "CHANNEL";
 
-pub fn open_channel(env: &Env, counterparty: Address, deposit: i128) -> BytesN<32> {
+pub fn open_channel(
+    env: &Env,
+    sender: Address,
+    counterparty: Address,
+    deposit: i128,
+) -> BytesN<32> {
     if deposit <= 0 {
         panic_with_error!(env, PaymentStreamingError::InvalidDeposit);
     }
 
-    let caller = env.current_contract_address();
-    caller.require_auth();
+    sender.require_auth();
 
-    let channel_id = env.storage().instance().get(&CHANNEL_KEY)
+    let current_channel_id = env
+        .storage()
+        .instance()
+        .get(&CHANNEL_KEY)
         .unwrap_or(BytesN::from_array(&env, &[0; 32]));
-    let _new_channel_id = increment_bytesn(&env, channel_id.clone());
+    let channel_id = increment_bytesn(&env, current_channel_id);
     let channel = PaymentChannel {
         channel_id: channel_id.clone(),
-        party_a: caller,
+        party_a: sender,
         party_b: counterparty,
         deposit,
         balance_a: deposit,
@@ -39,12 +46,15 @@ pub fn open_channel(env: &Env, counterparty: Address, deposit: i128) -> BytesN<3
 
     env.storage().persistent().set(&channel_id, &channel);
     env.storage().instance().set(&CHANNEL_KEY, &channel_id);
-    
+
     channel_id
 }
 
 pub fn close_channel(env: &Env, channel_id: BytesN<32>, final_state: (i128, i128)) {
-    let mut channel: PaymentChannel = env.storage().persistent().get(&channel_id)
+    let mut channel: PaymentChannel = env
+        .storage()
+        .persistent()
+        .get(&channel_id)
         .unwrap_or_else(|| panic_with_error!(env, PaymentStreamingError::ChannelNotFound));
 
     channel.party_a.require_auth();
@@ -52,7 +62,7 @@ pub fn close_channel(env: &Env, channel_id: BytesN<32>, final_state: (i128, i128
 
     if channel.is_closed {
         panic_with_error!(env, PaymentStreamingError::ChannelAlreadyClosed);
-        }
+    }
 
     let (final_a, final_b) = final_state;
     if final_a + final_b != channel.deposit {
@@ -62,7 +72,7 @@ pub fn close_channel(env: &Env, channel_id: BytesN<32>, final_state: (i128, i128
     channel.balance_a = final_a;
     channel.balance_b = final_b;
     channel.is_closed = true;
-    
+
     env.storage().persistent().set(&channel_id, &channel);
 }
 
