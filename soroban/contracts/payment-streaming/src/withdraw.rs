@@ -30,7 +30,8 @@ fn calculate_available(stream: &Stream, elapsed: u64) -> i128 {
     if elapsed >= stream.duration {
         stream.total_amount - stream.withdrawn
     } else {
-        let rate = stream.total_amount / stream.duration as i128;
-        (rate * elapsed as i128) - stream.withdrawn
+        // Calculate proportional amount to avoid integer division precision loss
+        let proportional_amount = (stream.total_amount * elapsed as i128) / stream.duration as i128;
+        proportional_amount - stream.withdrawn
     }
 }
