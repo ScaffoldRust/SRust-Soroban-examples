@@ -179,13 +179,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "asset-tokenization-contract"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 21.7.7",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -550,6 +543,13 @@ dependencies = [
  "sec1",
  "subtle",
  "zeroize",
+]
+
+[[package]]
+name = "energy-project-funding-escrow"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.7",
 ]
 
 [[package]]
@@ -1639,6 +1639,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "telemedicine-payment-gateway"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.7",
 ]
 
 [[package]]
