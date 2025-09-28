@@ -40,7 +40,6 @@ jobs:
               delay=$((delay*2))
             done
           }
-          # Asegura toolchain y target (idempotente)
           retry rustup show
           retry rustup target add wasm32v1-none
 
@@ -80,7 +79,6 @@ jobs:
               sleep $delay
             done
           }
-          # brew puede tener fallos de red; prueba directo y luego con update mínimo
           if ! brew install stellar-cli; then
             brew update --quiet
             retry brew install stellar-cli
