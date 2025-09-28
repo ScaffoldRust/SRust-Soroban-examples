@@ -1,4 +1,4 @@
-name: Soroban Smart Contract CI
+name: Stellar Soroban Smart Contract CI
 
 on:
   push:
@@ -8,44 +8,93 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  HOMEBREW_NO_AUTO_UPDATE: "1"
+  HOMEBREW_NO_INSTALL_CLEANUP: "1"
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install Rust
-      run: |
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        source $HOME/.cargo/env
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
 
-    - name: Install Rust target for Soroban
-      run: |
-        source $HOME/.cargo/env
-        rustup target add wasm32v1-none
+      - name: Ensure toolchain & components (with retries)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          retry() {
+            local n=0; local max=5; local delay=10
+            until "$@"; do
+              n=$((n+1))
+              if [[ $n -ge $max ]]; then
+                echo "Command failed after $n attempts: $*"
+                exit 1
+              fi
+              echo "Retry $n/$max..."
+              sleep $delay
+              delay=$((delay*2))
+            done
+          }
+          # Asegura toolchain y target (idempotente)
+          retry rustup show
+          retry rustup target add wasm32v1-none
 
-    - name: Install Stellar CLI with Homebrew
-      run: |
-        brew update
-        brew install stellar-cli
-        stellar --version
+      - name: Cache cargo registry + index
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
 
-    - name: Build Cargo project
-      run: |
-        source $HOME/.cargo/env
-        cargo build --verbose
-      working-directory: soroban
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: |
+            target
+            soroban/target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}-${{ steps.rustc-version.outputs.hash || 'nohash' }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-
 
-    - name: Build Soroban contract
-      run: |
-        source $HOME/.cargo/env
-        stellar contract build --verbose
-      working-directory: soroban
+      - name: Install Stellar CLI
+        shell: bash
+        run: |
+          set -euxo pipefail
+          retry() {
+            local n=0; local max=4; local delay=10
+            until "$@"; do
+              n=$((n+1))
+              if [[ $n -ge $max ]]; then
+                echo "Command failed after $n attempts: $*"
+                exit 1
+              fi
+              echo "Retry $n/$max..."
+              sleep $delay
+            done
+          }
+          # brew puede tener fallos de red; prueba directo y luego con update mínimo
+          if ! brew install stellar-cli; then
+            brew update --quiet
+            retry brew install stellar-cli
+          fi
+          stellar --version
 
-    - name: Run Cargo tests
-      run: |
-        source $HOME/.cargo/env
-        cargo test --verbose
-      working-directory: soroban
+      - name: Build Cargo project
+        working-directory: soroban
+        run: cargo build --verbose
+
+      - name: Build Soroban contract
+        working-directory: soroban
+        run: stellar contract build --verbose
+
+      - name: Run Cargo tests
+        working-directory: soroban
+        run: cargo test --verbose
