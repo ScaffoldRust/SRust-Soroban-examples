@@ -86,3 +86,32 @@ fn test_cancel_nonexistent_order() {
     let result = client.try_cancel_order(&producer, &999u64);
     assert_eq!(result, Err(Ok(MarketplaceError::OrderNotFound)));
 }
+
+#[test]
+fn test_duplicate_order_placement() {
+    let (_env, client, _admin, _token, producer, _consumer) = setup_test_environment();
+
+    // Place multiple identical orders - should all succeed with different IDs
+    let order_id1 = client.place_order(&producer, &OrderType::Sell, &100u64, &50u64);
+    let order_id2 = client.place_order(&producer, &OrderType::Sell, &100u64, &50u64);
+    let order_id3 = client.place_order(&producer, &OrderType::Sell, &100u64, &50u64);
+
+    // All orders should have unique IDs
+    assert_ne!(order_id1, order_id2);
+    assert_ne!(order_id2, order_id3);
+    assert_ne!(order_id1, order_id3);
+
+    // All orders should be retrievable and active
+    let order1 = client.get_order(&order_id1);
+    let order2 = client.get_order(&order_id2);
+    let order3 = client.get_order(&order_id3);
+
+    assert_eq!(order1.status, OrderStatus::Active);
+    assert_eq!(order2.status, OrderStatus::Active);
+    assert_eq!(order3.status, OrderStatus::Active);
+
+    // Verify all have same parameters but different IDs
+    assert_eq!(order1.quantity_kwh, 100u64);
+    assert_eq!(order2.quantity_kwh, 100u64);
+    assert_eq!(order3.quantity_kwh, 100u64);
+}
