@@ -5,6 +5,7 @@
   },
   "auth": [
     [],
+    [],
     []
   ],
   "ledger": {
@@ -20,7 +21,7 @@
       [
         {
           "contract_data": {
-            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
+            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
             "key": "ledger_key_contract_instance",
             "durability": "persistent"
           }
@@ -31,7 +32,7 @@
             "data": {
               "contract_data": {
                 "ext": "v0",
-                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
+                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
                 "key": "ledger_key_contract_instance",
                 "durability": "persistent",
                 "val": {
@@ -39,7 +40,48 @@
                     "executable": {
                       "wasm": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
                     },
-                    "storage": null
+                    "storage": [
+                      {
+                        "key": {
+                          "vec": [
+                            {
+                              "symbol": "Parameters"
+                            }
+                          ]
+                        },
+                        "val": {
+                          "map": [
+                            {
+                              "key": {
+                                "symbol": "max_mint_amount"
+                              },
+                              "val": {
+                                "i128": {
+                                  "hi": 0,
+                                  "lo": 1000000000
+                                }
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "min_collateral_ratio"
+                              },
+                              "val": {
+                                "u32": 15000
+                              }
+                            },
+                            {
+                              "key": {
+                                "symbol": "rebalance_interval"
+                              },
+                              "val": {
+                                "u64": 86400
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
                   }
                 }
               }
