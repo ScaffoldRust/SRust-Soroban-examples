@@ -1,8 +1,8 @@
 #![cfg(test)]
 
+use crate::tests::utils::setup_test_environment;
+use crate::utils::{MarketplaceError, OrderStatus, OrderType};
 use soroban_sdk::testutils::Address as _;
-use crate::tests::utils::{setup_test_environment};
-use crate::utils::{OrderType, OrderStatus, MarketplaceError};
 
 #[test]
 fn test_place_sell_order() {

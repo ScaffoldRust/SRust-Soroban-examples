@@ -1,9 +1,16 @@
 #![cfg(test)]
 
-use soroban_sdk::{testutils::Address as _, Address, Env};
 use crate::{EnergyTradingMarketplace, EnergyTradingMarketplaceClient};
+use soroban_sdk::{testutils::Address as _, Address, Env};
 
-pub fn setup_test_environment() -> (Env, EnergyTradingMarketplaceClient<'static>, Address, Address, Address, Address) {
+pub fn setup_test_environment() -> (
+    Env,
+    EnergyTradingMarketplaceClient<'static>,
+    Address,
+    Address,
+    Address,
+    Address,
+) {
     let env = Env::default();
     env.mock_all_auths();
 
@@ -26,10 +33,17 @@ pub fn setup_test_environment() -> (Env, EnergyTradingMarketplaceClient<'static>
 }
 
 pub fn create_test_token(env: &Env, admin: &Address) -> Address {
-    env.register_stellar_asset_contract_v2(admin.clone()).address()
+    env.register_stellar_asset_contract_v2(admin.clone())
+        .address()
 }
 
-pub fn mint_tokens(env: &Env, token_address: &Address, _admin: &Address, to: &Address, amount: i128) {
+pub fn mint_tokens(
+    env: &Env,
+    token_address: &Address,
+    _admin: &Address,
+    to: &Address,
+    amount: i128,
+) {
     use soroban_sdk::token;
     let token = token::StellarAssetClient::new(env, token_address);
     token.mint(to, &amount);

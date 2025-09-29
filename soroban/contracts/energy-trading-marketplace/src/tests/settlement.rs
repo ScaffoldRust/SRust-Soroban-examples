@@ -1,8 +1,8 @@
 #![cfg(test)]
 
+use crate::tests::utils::{mint_tokens, setup_test_environment};
+use crate::utils::{MarketplaceError, OrderType};
 use soroban_sdk::testutils::Address as _;
-use crate::tests::utils::{setup_test_environment, mint_tokens};
-use crate::utils::{OrderType, MarketplaceError};
 
 #[test]
 fn test_settle_trade_by_buyer() {

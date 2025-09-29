@@ -1,8 +1,8 @@
 #![cfg(test)]
 
+use crate::tests::utils::setup_test_environment;
+use crate::utils::{OrderStatus, OrderType};
 use soroban_sdk::testutils::Address as _;
-use crate::tests::utils::{setup_test_environment};
-use crate::utils::{OrderType, OrderStatus};
 
 #[test]
 fn test_automatic_order_matching() {

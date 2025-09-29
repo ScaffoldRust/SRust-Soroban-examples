@@ -1,4 +1,4 @@
-mod trading;
 mod matching;
 mod settlement;
+mod trading;
 mod utils;
