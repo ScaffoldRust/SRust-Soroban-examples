@@ -307,14 +307,6 @@ This contract is designed for clinical trial data verification. When contributin
 3. Document all public functions
 4. Follow Rust/Soroban best practices
 
-## License
-
-This project is licensed under MIT License.
-
 ## Disclaimer
 
 This smart contract is provided for educational and development purposes. For production use in clinical trials, ensure compliance with all applicable regulations (FDA, EMA, ICH-GCP, HIPAA, GDPR, etc.) and conduct thorough security audits.
-
-## Support
-
-For issues, questions, or contributions, please open an issue on the repository.
