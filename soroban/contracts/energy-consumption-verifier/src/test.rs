@@ -288,7 +288,6 @@ fn test_not_initialized_error() {
     env.mock_all_auths();
 
     let consumer = Address::generate(&env);
-    let admin = Address::generate(&env);
     let contract_id = env.register(EnergyConsumptionVerifier, ());
     let client = EnergyConsumptionVerifierClient::new(&env, &contract_id);
 
