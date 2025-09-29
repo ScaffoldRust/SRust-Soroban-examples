@@ -1,5 +1,5 @@
-use soroban_sdk::{Env, Vec, Map, Address, symbol_short};
 use crate::utils::*;
+use soroban_sdk::{symbol_short, Address, Env, Map, Vec};
 
 /// Place an order
 pub fn place_order(
@@ -40,7 +40,9 @@ pub fn place_order(
 /// Match an order with existing orders
 pub fn match_order(env: &Env, order_id: u64) -> Result<Vec<u64>, MarketplaceError> {
     let orders: Map<u64, EnergyOrder> = env.storage().instance().get(&DataKey::Orders).unwrap();
-    let new_order = orders.get(order_id).ok_or(MarketplaceError::OrderNotFound)?;
+    let new_order = orders
+        .get(order_id)
+        .ok_or(MarketplaceError::OrderNotFound)?;
 
     if new_order.status != OrderStatus::Active {
         return Ok(Vec::new(env));
@@ -62,7 +64,7 @@ pub fn match_order(env: &Env, order_id: u64) -> Result<Vec<u64>, MarketplaceErro
         if match_order.order_type == opposite_type && can_orders_match(&new_order, &match_order) {
             let trade_id = execute_trade(env, &new_order, &match_order)?;
             matched_trades.push_back(trade_id);
-            break; 
+            break;
         }
     }
 
@@ -82,7 +84,11 @@ fn can_orders_match(buy_order: &EnergyOrder, sell_order: &EnergyOrder) -> bool {
 }
 
 /// Execute a trade between matching orders
-fn execute_trade(env: &Env, order1: &EnergyOrder, order2: &EnergyOrder) -> Result<u64, MarketplaceError> {
+fn execute_trade(
+    env: &Env,
+    order1: &EnergyOrder,
+    order2: &EnergyOrder,
+) -> Result<u64, MarketplaceError> {
     let trade_id = get_next_trade_id(env);
 
     let (buyer, seller) = if order1.order_type == OrderType::Buy {
@@ -148,7 +154,9 @@ fn mark_orders_filled(env: &Env, order_id1: u64, order_id2: u64) -> Result<(), M
 /// Cancel an order
 pub fn cancel_order(env: &Env, trader: Address, order_id: u64) -> Result<(), MarketplaceError> {
     let mut orders: Map<u64, EnergyOrder> = env.storage().instance().get(&DataKey::Orders).unwrap();
-    let mut order = orders.get(order_id).ok_or(MarketplaceError::OrderNotFound)?;
+    let mut order = orders
+        .get(order_id)
+        .ok_or(MarketplaceError::OrderNotFound)?;
 
     if order.trader != trader {
         return Err(MarketplaceError::NotAuthorized);
@@ -162,10 +170,8 @@ pub fn cancel_order(env: &Env, trader: Address, order_id: u64) -> Result<(), Mar
     orders.set(order_id, order);
     env.storage().instance().set(&DataKey::Orders, &orders);
 
-    env.events().publish(
-        (symbol_short!("cancelled"), trader),
-        order_id,
-    );
+    env.events()
+        .publish((symbol_short!("cancelled"), trader), order_id);
 
     Ok(())
 }
@@ -182,13 +188,25 @@ pub fn get_order(env: &Env, order_id: u64) -> Result<EnergyOrder, MarketplaceErr
 }
 
 fn get_next_order_id(env: &Env) -> u64 {
-    let current_id: u64 = env.storage().instance().get(&DataKey::NextOrderId).unwrap_or(1);
-    env.storage().instance().set(&DataKey::NextOrderId, &(current_id + 1));
+    let current_id: u64 = env
+        .storage()
+        .instance()
+        .get(&DataKey::NextOrderId)
+        .unwrap_or(1);
+    env.storage()
+        .instance()
+        .set(&DataKey::NextOrderId, &(current_id + 1));
     current_id
 }
 
 fn get_next_trade_id(env: &Env) -> u64 {
-    let current_id: u64 = env.storage().instance().get(&DataKey::NextTradeId).unwrap_or(1);
-    env.storage().instance().set(&DataKey::NextTradeId, &(current_id + 1));
+    let current_id: u64 = env
+        .storage()
+        .instance()
+        .get(&DataKey::NextTradeId)
+        .unwrap_or(1);
+    env.storage()
+        .instance()
+        .set(&DataKey::NextTradeId, &(current_id + 1));
     current_id
 }

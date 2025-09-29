@@ -1,5 +1,5 @@
-use soroban_sdk::{Env, Map, Address, symbol_short, token};
 use crate::utils::*;
+use soroban_sdk::{symbol_short, token, Address, Env, Map};
 
 /// Settle a trade with payment transfer
 pub fn settle_trade(env: &Env, trade_id: u64, settler: Address) -> Result<(), MarketplaceError> {
@@ -9,7 +9,9 @@ pub fn settle_trade(env: &Env, trade_id: u64, settler: Address) -> Result<(), Ma
         .get(&DataKey::Trades)
         .unwrap_or_else(|| Map::new(env));
 
-    let trade = trades.get(trade_id).ok_or(MarketplaceError::TradeNotFound)?;
+    let trade = trades
+        .get(trade_id)
+        .ok_or(MarketplaceError::TradeNotFound)?;
 
     // Verify authorization (only buyer or seller can settle)
     if settler != trade.buyer && settler != trade.seller {

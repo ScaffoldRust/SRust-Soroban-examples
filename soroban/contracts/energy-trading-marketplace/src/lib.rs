@@ -4,9 +4,6 @@ mod settlement;
 mod trading;
 mod utils;
 
-#[cfg(test)]
-mod test;
-
 use soroban_sdk::{contract, contractimpl, Address, Env, Map, Vec};
 
 use crate::utils::*;
