@@ -1,0 +1,16 @@
+[package]
+name = "clinical-trial-data-verifier"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+tiny-keccak = { version = "2.0", features = ["sha3"] }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
