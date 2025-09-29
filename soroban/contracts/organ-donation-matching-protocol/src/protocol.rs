@@ -1,8 +1,8 @@
-use soroban_sdk::{Env, Address, String};
 use crate::{
-    DonorProfile, RecipientProfile, MatchResult, Config, DataKey, ContractError,
-    BloodType, OrganType, UrgencyLevel, HLAProfile
+    BloodType, Config, ContractError, DataKey, DonorProfile, HLAProfile, MatchResult, OrganType,
+    RecipientProfile, UrgencyLevel,
 };
+use soroban_sdk::{Address, Env, String};
 
 use crate::utils::generate_match_id;
 
@@ -27,7 +27,8 @@ pub fn validate_donor_data(
     }
 
     // HLA profile validation - ensure at least one allele per locus
-    if hla_profile.hla_a.is_empty() || hla_profile.hla_b.is_empty() || hla_profile.hla_dr.is_empty() {
+    if hla_profile.hla_a.is_empty() || hla_profile.hla_b.is_empty() || hla_profile.hla_dr.is_empty()
+    {
         return Err(ContractError::InvalidMedicalFacility); // Using closest error
     }
 
@@ -56,7 +57,8 @@ pub fn validate_recipient_data(
     }
 
     // HLA profile validation
-    if hla_profile.hla_a.is_empty() || hla_profile.hla_b.is_empty() || hla_profile.hla_dr.is_empty() {
+    if hla_profile.hla_a.is_empty() || hla_profile.hla_b.is_empty() || hla_profile.hla_dr.is_empty()
+    {
         return Err(ContractError::InvalidMedicalFacility); // Using closest error
     }
 
@@ -70,25 +72,31 @@ pub fn deactivate_matched_profiles(
     recipient_address: &Address,
 ) -> Result<(), ContractError> {
     // Deactivate donor
-    let mut donor: DonorProfile = env.storage().persistent()
+    let mut donor: DonorProfile = env
+        .storage()
+        .persistent()
         .get(&DataKey::Donor(donor_address.clone()))
         .ok_or(ContractError::DonorNotFound)?;
-    
+
     donor.is_active = false;
-    env.storage().persistent().set(&DataKey::Donor(donor_address.clone()), &donor);
+    env.storage()
+        .persistent()
+        .set(&DataKey::Donor(donor_address.clone()), &donor);
 
     // Deactivate recipient
-    let mut recipient: RecipientProfile = env.storage().persistent()
+    let mut recipient: RecipientProfile = env
+        .storage()
+        .persistent()
         .get(&DataKey::Recipient(recipient_address.clone()))
         .ok_or(ContractError::RecipientNotFound)?;
-    
+
     recipient.is_active = false;
-    env.storage().persistent().set(&DataKey::Recipient(recipient_address.clone()), &recipient);
+    env.storage()
+        .persistent()
+        .set(&DataKey::Recipient(recipient_address.clone()), &recipient);
 
     Ok(())
 }
-
-
 
 /// Validate organ-specific medical criteria
 pub fn validate_organ_specific_criteria(
@@ -133,7 +141,7 @@ fn validate_liver_criteria(
 ) -> Result<bool, ContractError> {
     // Liver transplants are time-sensitive and have different age considerations
     let age_compatible = donor.age <= 70 && recipient.age <= 70;
-    
+
     if !age_compatible && recipient.urgency_level != UrgencyLevel::Critical {
         return Ok(false);
     }
@@ -217,14 +225,14 @@ pub fn verify_consent(
     donor_address: &Address,
     consent_hash: &String,
 ) -> Result<bool, ContractError> {
-    let donor: DonorProfile = env.storage().persistent()
+    let donor: DonorProfile = env
+        .storage()
+        .persistent()
         .get(&DataKey::Donor(donor_address.clone()))
         .ok_or(ContractError::DonorNotFound)?;
 
     Ok(donor.consent_hash == *consent_hash)
 }
-
-
 
 /// Emergency override function for critical cases
 pub fn emergency_override_match(
@@ -236,7 +244,9 @@ pub fn emergency_override_match(
 ) -> Result<MatchResult, ContractError> {
     admin.require_auth();
 
-    let config: Config = env.storage().instance()
+    let config: Config = env
+        .storage()
+        .instance()
         .get(&DataKey::Config)
         .ok_or(ContractError::NotInitialized)?;
 
@@ -244,11 +254,15 @@ pub fn emergency_override_match(
         return Err(ContractError::NotAuthorized);
     }
 
-    let donor: DonorProfile = env.storage().persistent()
+    let donor: DonorProfile = env
+        .storage()
+        .persistent()
         .get(&DataKey::Donor(donor_address.clone()))
         .ok_or(ContractError::DonorNotFound)?;
 
-    let recipient: RecipientProfile = env.storage().persistent()
+    let recipient: RecipientProfile = env
+        .storage()
+        .persistent()
         .get(&DataKey::Recipient(recipient_address.clone()))
         .ok_or(ContractError::RecipientNotFound)?;
 
@@ -270,8 +284,9 @@ pub fn emergency_override_match(
         medical_facility: recipient.medical_facility.clone(),
     };
 
-    env.storage().persistent().set(&DataKey::Match(match_id), &match_result);
-
+    env.storage()
+        .persistent()
+        .set(&DataKey::Match(match_id), &match_result);
 
     Ok(match_result)
 }

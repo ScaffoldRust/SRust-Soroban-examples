@@ -1,12 +1,12 @@
 // matching.rs - Organ Donation Matching Algorithms
 // Implements UNOS-inspired compatibility scoring and matching logic
 
-use soroban_sdk::{Env, Vec};
-use crate::{
-    BloodType, OrganType, UrgencyLevel, HLAProfile, DonorProfile, RecipientProfile, 
-    MatchResult, Config, DataKey, ContractError
-};
 use crate::utils::generate_match_id;
+use crate::{
+    BloodType, Config, ContractError, DataKey, DonorProfile, HLAProfile, MatchResult, OrganType,
+    RecipientProfile, UrgencyLevel,
+};
+use soroban_sdk::{Env, Vec};
 
 /// Calculate blood type compatibility score
 /// Returns 0-100 score, with 0 meaning incompatible (absolute rejection)
@@ -17,18 +17,18 @@ pub fn blood_compatibility_score(donor_blood: &BloodType, recipient_blood: &Bloo
         (BloodType::B, BloodType::B) => 100,
         (BloodType::AB, BloodType::AB) => 100,
         (BloodType::O, BloodType::O) => 100,
-        
+
         // Universal donor O to any recipient
         (BloodType::O, BloodType::A) => 95,
         (BloodType::O, BloodType::B) => 95,
         (BloodType::O, BloodType::AB) => 95,
-        
+
         // A can donate to AB
         (BloodType::A, BloodType::AB) => 90,
-        
+
         // B can donate to AB
         (BloodType::B, BloodType::AB) => 90,
-        
+
         // All other combinations are incompatible
         _ => 0,
     }
@@ -84,12 +84,12 @@ pub fn age_compatibility_score(donor_age: u32, recipient_age: u32, organ_type: &
 
     // Different age tolerance based on organ type
     let max_acceptable_diff = match organ_type {
-        OrganType::Kidney => 15,     // Most tolerant
-        OrganType::Liver => 20,      // Very tolerant
-        OrganType::Heart => 10,      // Strict - size and function critical
-        OrganType::Lung => 10,       // Strict - size matching important
-        OrganType::Pancreas => 15,   // Moderate tolerance
-        OrganType::Intestine => 20,  // Flexible
+        OrganType::Kidney => 15,    // Most tolerant
+        OrganType::Liver => 20,     // Very tolerant
+        OrganType::Heart => 10,     // Strict - size and function critical
+        OrganType::Lung => 10,      // Strict - size matching important
+        OrganType::Pancreas => 15,  // Moderate tolerance
+        OrganType::Intestine => 20, // Flexible
     };
 
     if age_diff == 0 {
@@ -112,15 +112,15 @@ pub fn calculate_priority_score(
 ) -> u32 {
     // Base urgency score from medical assessment
     let urgency_score = match recipient.urgency_level {
-        UrgencyLevel::Critical => 1000,  // Life-threatening, immediate need
-        UrgencyLevel::High => 750,       // Urgent, significant deterioration
-        UrgencyLevel::Medium => 500,     // Important but stable
-        UrgencyLevel::Low => 250,        // Can wait longer
+        UrgencyLevel::Critical => 1000, // Life-threatening, immediate need
+        UrgencyLevel::High => 750,      // Urgent, significant deterioration
+        UrgencyLevel::Medium => 500,    // Important but stable
+        UrgencyLevel::Low => 250,       // Can wait longer
     };
 
     // Wait time score - capped at 1 year to prevent extreme values
     let wait_time_score = wait_time_days.min(365) * 2;
-    
+
     // Medical priority score from healthcare provider
     let medical_score = recipient.medical_priority_score;
 
@@ -130,10 +130,7 @@ pub fn calculate_priority_score(
 
 /// Calculate overall compatibility score
 /// This is the core matching algorithm that combines all factors
-pub fn calculate_compatibility_score(
-    donor: &DonorProfile,
-    recipient: &RecipientProfile,
-) -> u32 {
+pub fn calculate_compatibility_score(donor: &DonorProfile, recipient: &RecipientProfile) -> u32 {
     // Blood type compatibility (40% weight) - CRITICAL FACTOR
     let blood_score = blood_compatibility_score(&donor.blood_type, &recipient.blood_type);
     if blood_score == 0 {
@@ -142,7 +139,7 @@ pub fn calculate_compatibility_score(
 
     // HLA compatibility (35% weight) - MAJOR FACTOR
     let hla_score = hla_compatibility_score(&donor.hla_profile, &recipient.hla_profile);
-    
+
     // Age compatibility (25% weight) - SUPPORTING FACTOR
     let age_score = age_compatibility_score(donor.age, recipient.age, &donor.organ_type);
 
@@ -163,12 +160,16 @@ pub fn find_compatible_donors(
     config: &Config,
 ) -> Result<Vec<MatchResult>, ContractError> {
     let mut matches = Vec::new(env);
-    let donor_count: u32 = env.storage().instance().get(&DataKey::DonorCount).unwrap_or(0);
+    let donor_count: u32 = env
+        .storage()
+        .instance()
+        .get(&DataKey::DonorCount)
+        .unwrap_or(0);
     let current_time = env.ledger().timestamp();
-    
+
     // Calculate current wait time for recipient
     let wait_time_days = ((current_time - recipient.registered_at) / 86400) as u32;
-    
+
     for donor_id in 0..donor_count {
         if let Some(donor) = get_donor_by_index(env, donor_id) {
             // Skip inactive donors
@@ -183,22 +184,19 @@ pub fn find_compatible_donors(
 
             // Calculate compatibility score
             let compatibility_score = calculate_compatibility_score(&donor, recipient);
-            
+
             // Check if compatibility meets minimum threshold
             if compatibility_score < config.compatibility_threshold {
                 continue;
             }
 
             // Calculate priority score for this match
-            let priority_score = calculate_priority_score(
-                recipient,
-                wait_time_days,
-                config.urgency_weight,
-            );
+            let priority_score =
+                calculate_priority_score(recipient, wait_time_days, config.urgency_weight);
 
             // Generate unique match ID
             let match_id = generate_match_id(env);
-            
+
             // Create match result
             let match_result = MatchResult {
                 match_id,
@@ -212,7 +210,9 @@ pub fn find_compatible_donors(
             };
 
             // Store the match for future reference
-            env.storage().persistent().set(&DataKey::Match(match_id), &match_result);
+            env.storage()
+                .persistent()
+                .set(&DataKey::Match(match_id), &match_result);
             matches.push_back(match_result);
         }
     }
@@ -223,13 +223,17 @@ pub fn find_compatible_donors(
     Ok(matches)
 }
 
-
-
 /// Get donor by index
 /// In production, this would use a proper indexing system
 fn get_donor_by_index(env: &Env, _index: u32) -> Option<DonorProfile> {
-    let donor_address = env.storage().instance().get(&DataKey::DonorIndex(_index)).unwrap();
-    env.storage().persistent().get(&DataKey::Donor(donor_address))
+    let donor_address = env
+        .storage()
+        .instance()
+        .get(&DataKey::DonorIndex(_index))
+        .unwrap();
+    env.storage()
+        .persistent()
+        .get(&DataKey::Donor(donor_address))
 }
 
 /// Sort matches by priority and compatibility scores
@@ -245,7 +249,7 @@ fn sort_matches_by_priority(_env: &Env, matches: &mut Vec<MatchResult>) {
         for j in 0..(len - i - 1) {
             let current = matches.get(j).unwrap();
             let next = matches.get(j + 1).unwrap();
-            
+
             // Sort by priority score first (descending), then by compatibility (descending)
             let should_swap = if current.priority_score != next.priority_score {
                 current.priority_score < next.priority_score
@@ -276,7 +280,7 @@ pub fn calculate_unos_score(
     }
 
     let priority_score = calculate_priority_score(recipient, wait_time_days, urgency_weight);
-    
+
     // Geographic proximity bonus (simplified)
     // In reality, would calculate actual distance between medical facilities
     let geographic_bonus = if donor.medical_facility == recipient.medical_facility {
@@ -287,12 +291,12 @@ pub fn calculate_unos_score(
 
     // Time sensitivity bonus for organs with short viability windows
     let time_bonus = match donor.organ_type {
-        OrganType::Heart => 100,     // 4-6 hours - most urgent
-        OrganType::Lung => 90,       // 6-8 hours
-        OrganType::Liver => 80,      // 12-18 hours
-        OrganType::Pancreas => 60,   // 12-20 hours
-        OrganType::Intestine => 50,  // 8-12 hours
-        OrganType::Kidney => 0,      // 24-36 hours - less urgent
+        OrganType::Heart => 100,    // 4-6 hours - most urgent
+        OrganType::Lung => 90,      // 6-8 hours
+        OrganType::Liver => 80,     // 12-18 hours
+        OrganType::Pancreas => 60,  // 12-20 hours
+        OrganType::Intestine => 50, // 8-12 hours
+        OrganType::Kidney => 0,     // 24-36 hours - less urgent
     };
 
     // Final weighted score combining all factors
@@ -301,10 +305,7 @@ pub fn calculate_unos_score(
 
 /// Check for crossmatch compatibility (simplified antibody testing)
 /// In reality, this would involve complex serological testing
-pub fn check_crossmatch_compatibility(
-    donor_hla: &HLAProfile,
-    recipient_hla: &HLAProfile,
-) -> bool {
+pub fn check_crossmatch_compatibility(donor_hla: &HLAProfile, recipient_hla: &HLAProfile) -> bool {
     // Simplified crossmatch check
     // Real implementation would check for recipient antibodies against donor HLA
     let hla_score = hla_compatibility_score(donor_hla, recipient_hla);
@@ -343,20 +344,17 @@ pub fn validate_medical_compatibility(
 
 /// Calculate expected transplant success probability (simplified model)
 /// Returns a percentage (0-100) based on compatibility factors
-pub fn calculate_success_probability(
-    donor: &DonorProfile,
-    recipient: &RecipientProfile,
-) -> u32 {
+pub fn calculate_success_probability(donor: &DonorProfile, recipient: &RecipientProfile) -> u32 {
     let compatibility = calculate_compatibility_score(donor, recipient);
-    
+
     // Organ-specific base success rates
     let base_rate = match donor.organ_type {
-        OrganType::Kidney => 90,     // Highest success rate
-        OrganType::Liver => 85,      // Very good outcomes
-        OrganType::Heart => 80,      // Good but complex
-        OrganType::Lung => 75,       // More challenging
-        OrganType::Pancreas => 85,   // Good outcomes
-        OrganType::Intestine => 70,  // Most challenging
+        OrganType::Kidney => 90,    // Highest success rate
+        OrganType::Liver => 85,     // Very good outcomes
+        OrganType::Heart => 80,     // Good but complex
+        OrganType::Lung => 75,      // More challenging
+        OrganType::Pancreas => 85,  // Good outcomes
+        OrganType::Intestine => 70, // Most challenging
     };
 
     // Adjust based on compatibility score
@@ -382,7 +380,7 @@ pub fn estimate_viability_remaining(
 
     let viability_seconds = viability_hours * 3600;
     let elapsed = current_time - procurement_time;
-    
+
     if elapsed >= viability_seconds {
         0 // No time remaining
     } else {

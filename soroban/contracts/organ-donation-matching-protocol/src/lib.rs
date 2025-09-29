@@ -1,10 +1,10 @@
 #![no_std]
-use soroban_sdk::{contract, contracttype, contracterror, contractimpl, Env, Address, String, Vec};
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, Address, Env, String, Vec};
 
 mod matching;
 mod protocol;
-mod utils;
 mod test;
+mod utils;
 
 pub use matching::*;
 pub use protocol::*;
@@ -150,7 +150,7 @@ impl OrganDonationMatchingContract {
         compatibility_threshold: u32,
     ) -> Result<(), ContractError> {
         admin.require_auth();
-        
+
         if env.storage().instance().has(&DataKey::Config) {
             return Err(ContractError::AlreadyInitialized);
         }
@@ -166,7 +166,9 @@ impl OrganDonationMatchingContract {
 
         env.storage().instance().set(&DataKey::Config, &config);
         env.storage().instance().set(&DataKey::DonorCount, &0u32);
-        env.storage().instance().set(&DataKey::RecipientCount, &0u32);
+        env.storage()
+            .instance()
+            .set(&DataKey::RecipientCount, &0u32);
 
         Ok(())
     }
@@ -185,11 +187,15 @@ impl OrganDonationMatchingContract {
         donor_address.require_auth();
         medical_facility.require_auth();
 
-        let config: Config = env.storage().instance()
+        let config: Config = env
+            .storage()
+            .instance()
             .get(&DataKey::Config)
             .ok_or(ContractError::NotInitialized)?;
 
-        let donor_count: u32 = env.storage().instance()
+        let donor_count: u32 = env
+            .storage()
+            .instance()
             .get(&DataKey::DonorCount)
             .unwrap_or(0);
 
@@ -198,13 +204,13 @@ impl OrganDonationMatchingContract {
         }
 
         protocol::validate_donor_data(
-            &donor_address, 
+            &donor_address,
             &blood_type,
             &organ_type,
             &hla_profile,
             age,
             &medical_facility,
-            &consent_hash
+            &consent_hash,
         )?;
         let donor = DonorProfile {
             address: donor_address.clone(),
@@ -218,9 +224,15 @@ impl OrganDonationMatchingContract {
             consent_hash,
         };
 
-        env.storage().persistent().set(&DataKey::Donor(donor_address.clone()), &donor);
-        env.storage().instance().set(&DataKey::DonorIndex(donor_count), &donor_address);
-        env.storage().instance().set(&DataKey::DonorCount, &(donor_count + 1));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Donor(donor_address.clone()), &donor);
+        env.storage()
+            .instance()
+            .set(&DataKey::DonorIndex(donor_count), &donor_address);
+        env.storage()
+            .instance()
+            .set(&DataKey::DonorCount, &(donor_count + 1));
 
         Ok(())
     }
@@ -240,11 +252,15 @@ impl OrganDonationMatchingContract {
         recipient_address.require_auth();
         medical_facility.require_auth();
 
-        let config: Config = env.storage().instance()
+        let config: Config = env
+            .storage()
+            .instance()
             .get(&DataKey::Config)
             .ok_or(ContractError::NotInitialized)?;
 
-        let recipient_count: u32 = env.storage().instance()
+        let recipient_count: u32 = env
+            .storage()
+            .instance()
             .get(&DataKey::RecipientCount)
             .unwrap_or(0);
 
@@ -260,7 +276,7 @@ impl OrganDonationMatchingContract {
             age,
             &urgency_level,
             &medical_facility,
-            medical_priority_score
+            medical_priority_score,
         )?;
         let recipient = RecipientProfile {
             address: recipient_address.clone(),
@@ -276,8 +292,12 @@ impl OrganDonationMatchingContract {
             medical_priority_score,
         };
 
-        env.storage().persistent().set(&DataKey::Recipient(recipient_address), &recipient);
-        env.storage().instance().set(&DataKey::RecipientCount, &(recipient_count + 1));
+        env.storage()
+            .persistent()
+            .set(&DataKey::Recipient(recipient_address), &recipient);
+        env.storage()
+            .instance()
+            .set(&DataKey::RecipientCount, &(recipient_count + 1));
 
         Ok(())
     }
@@ -287,7 +307,9 @@ impl OrganDonationMatchingContract {
         env: Env,
         recipient_address: Address,
     ) -> Result<Vec<MatchResult>, ContractError> {
-        let config: Config = env.storage().instance()
+        let config: Config = env
+            .storage()
+            .instance()
             .get(&DataKey::Config)
             .ok_or(ContractError::NotInitialized)?;
 
@@ -295,7 +317,9 @@ impl OrganDonationMatchingContract {
             return Ok(Vec::new(&env));
         }
 
-        let recipient: RecipientProfile = env.storage().persistent()
+        let recipient: RecipientProfile = env
+            .storage()
+            .persistent()
             .get(&DataKey::Recipient(recipient_address.clone()))
             .ok_or(ContractError::RecipientNotFound)?;
 
@@ -314,7 +338,9 @@ impl OrganDonationMatchingContract {
     ) -> Result<(), ContractError> {
         medical_facility.require_auth();
 
-        let mut match_result: MatchResult = env.storage().persistent()
+        let mut match_result: MatchResult = env
+            .storage()
+            .persistent()
             .get(&DataKey::Match(match_id))
             .ok_or(ContractError::MatchNotFound)?;
 
@@ -327,7 +353,9 @@ impl OrganDonationMatchingContract {
         }
 
         match_result.confirmed = true;
-        env.storage().persistent().set(&DataKey::Match(match_id), &match_result);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Match(match_id), &match_result);
 
         // Deactivate donor and recipient profiles
         protocol::deactivate_matched_profiles(&env, &match_result.donor, &match_result.recipient)?;
@@ -337,12 +365,16 @@ impl OrganDonationMatchingContract {
 
     /// Get donor profile
     pub fn get_donor(env: Env, donor_address: Address) -> Option<DonorProfile> {
-        env.storage().persistent().get(&DataKey::Donor(donor_address))
+        env.storage()
+            .persistent()
+            .get(&DataKey::Donor(donor_address))
     }
 
     /// Get recipient profile
     pub fn get_recipient(env: Env, recipient_address: Address) -> Option<RecipientProfile> {
-        env.storage().persistent().get(&DataKey::Recipient(recipient_address))
+        env.storage()
+            .persistent()
+            .get(&DataKey::Recipient(recipient_address))
     }
 
     /// Get match result
@@ -360,11 +392,15 @@ impl OrganDonationMatchingContract {
     ) -> Result<(), ContractError> {
         caller.require_auth();
 
-        let config: Config = env.storage().instance()
+        let config: Config = env
+            .storage()
+            .instance()
             .get(&DataKey::Config)
             .ok_or(ContractError::NotInitialized)?;
 
-        let mut recipient: RecipientProfile = env.storage().persistent()
+        let mut recipient: RecipientProfile = env
+            .storage()
+            .persistent()
             .get(&DataKey::Recipient(recipient_address.clone()))
             .ok_or(ContractError::RecipientNotFound)?;
 
@@ -376,7 +412,9 @@ impl OrganDonationMatchingContract {
         recipient.urgency_level = urgency_level;
         recipient.medical_priority_score = medical_priority_score;
 
-        env.storage().persistent().set(&DataKey::Recipient(recipient_address), &recipient);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Recipient(recipient_address), &recipient);
 
         Ok(())
     }
@@ -389,11 +427,15 @@ impl OrganDonationMatchingContract {
     ) -> Result<(), ContractError> {
         caller.require_auth();
 
-        let config: Config = env.storage().instance()
+        let config: Config = env
+            .storage()
+            .instance()
             .get(&DataKey::Config)
             .ok_or(ContractError::NotInitialized)?;
 
-        let mut donor: DonorProfile = env.storage().persistent()
+        let mut donor: DonorProfile = env
+            .storage()
+            .persistent()
             .get(&DataKey::Donor(donor_address.clone()))
             .ok_or(ContractError::DonorNotFound)?;
 
@@ -403,7 +445,9 @@ impl OrganDonationMatchingContract {
         }
 
         donor.is_active = false;
-        env.storage().persistent().set(&DataKey::Donor(donor_address), &donor);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Donor(donor_address), &donor);
 
         Ok(())
     }
@@ -416,21 +460,30 @@ impl OrganDonationMatchingContract {
     ) -> Result<(), ContractError> {
         caller.require_auth();
 
-        let config: Config = env.storage().instance()
+        let config: Config = env
+            .storage()
+            .instance()
             .get(&DataKey::Config)
             .ok_or(ContractError::NotInitialized)?;
 
-        let mut recipient: RecipientProfile = env.storage().persistent()
+        let mut recipient: RecipientProfile = env
+            .storage()
+            .persistent()
             .get(&DataKey::Recipient(recipient_address.clone()))
             .ok_or(ContractError::RecipientNotFound)?;
 
         // Only admin, recipient themselves, or their medical facility can deactivate
-        if caller != config.admin && caller != recipient.address && caller != recipient.medical_facility {
+        if caller != config.admin
+            && caller != recipient.address
+            && caller != recipient.medical_facility
+        {
             return Err(ContractError::NotAuthorized);
         }
 
         recipient.is_active = false;
-        env.storage().persistent().set(&DataKey::Recipient(recipient_address), &recipient);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Recipient(recipient_address), &recipient);
 
         Ok(())
     }

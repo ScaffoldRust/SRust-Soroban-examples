@@ -1,11 +1,11 @@
 // utils.rs - Utility Functions for Organ Donation Matching Protocol
 // Provides helper functions for validation, formatting, and data processing
 
-use soroban_sdk::{Env, String};
 use crate::{
-    BloodType, OrganType, UrgencyLevel, HLAProfile, DonorProfile, RecipientProfile,
-    MatchResult, ContractError
+    BloodType, ContractError, DonorProfile, HLAProfile, MatchResult, OrganType, RecipientProfile,
+    UrgencyLevel,
 };
+use soroban_sdk::{Env, String};
 
 /// Convert blood type to string for logging and reporting
 pub fn blood_type_to_string(env: &Env, blood_type: &BloodType) -> String {
@@ -47,7 +47,7 @@ pub fn validate_hla_allele(allele: &String) -> bool {
     if len < 5 || len > 10 {
         return false;
     }
-    
+
     true
 }
 
@@ -87,10 +87,7 @@ pub fn validate_hla_profile(hla_profile: &HLAProfile) -> Result<(), ContractErro
 
 /// Calculate time-based urgency multiplier
 /// Adjusts urgency based on how long patient has been waiting
-pub fn calculate_time_urgency_multiplier(
-    urgency_level: &UrgencyLevel,
-    wait_time_days: u32,
-) -> f64 {
+pub fn calculate_time_urgency_multiplier(urgency_level: &UrgencyLevel, wait_time_days: u32) -> f64 {
     let base_multiplier = match urgency_level {
         UrgencyLevel::Critical => 4.0,
         UrgencyLevel::High => 3.0,
@@ -144,17 +141,16 @@ pub fn validate_age_for_organ_type(
     Ok(())
 }
 
-
 /// Calculate organ viability time windows (in hours)
 /// Different organs have different preservation times
 pub fn get_organ_viability_hours(organ_type: &OrganType) -> u32 {
     match organ_type {
-        OrganType::Heart => 4,      // 4-6 hours - most urgent
-        OrganType::Lung => 6,       // 6-8 hours
-        OrganType::Liver => 12,     // 12-18 hours
-        OrganType::Kidney => 24,    // 24-36 hours - most flexible
-        OrganType::Pancreas => 12,  // 12-20 hours
-        OrganType::Intestine => 8,  // 8-12 hours
+        OrganType::Heart => 4,     // 4-6 hours - most urgent
+        OrganType::Lung => 6,      // 6-8 hours
+        OrganType::Liver => 12,    // 12-18 hours
+        OrganType::Kidney => 24,   // 24-36 hours - most flexible
+        OrganType::Pancreas => 12, // 12-20 hours
+        OrganType::Intestine => 8, // 8-12 hours
     }
 }
 
@@ -168,7 +164,7 @@ pub fn is_match_viable(
     let viability_hours = get_organ_viability_hours(organ_type);
     let viability_seconds = viability_hours as u64 * 3600;
     let time_elapsed = current_time - match_result.matched_at;
-    
+
     time_elapsed <= viability_seconds
 }
 
@@ -181,15 +177,15 @@ pub fn calculate_population_statistics(
 ) -> (u32, u32) {
     // Blood type population frequencies (approximate global distribution)
     let blood_type_frequency = match blood_type {
-        BloodType::O => 45,   // 45% of population
-        BloodType::A => 40,   // 40% of population
-        BloodType::B => 11,   // 11% of population
-        BloodType::AB => 4,   // 4% of population
+        BloodType::O => 45, // 45% of population
+        BloodType::A => 40, // 40% of population
+        BloodType::B => 11, // 11% of population
+        BloodType::AB => 4, // 4% of population
     };
 
     // Organ demand scores based on typical waiting lists
     let organ_demand_score = match organ_type {
-        OrganType::Kidney => 85,    // Highest demand
+        OrganType::Kidney => 85, // Highest demand
         OrganType::Liver => 75,
         OrganType::Heart => 60,
         OrganType::Lung => 50,
@@ -199,7 +195,6 @@ pub fn calculate_population_statistics(
 
     (blood_type_frequency, organ_demand_score)
 }
-
 
 /// Validate consent string format
 /// Ensures consent hashes meet minimum security requirements
@@ -211,12 +206,9 @@ pub fn validate_consent_format(consent_hash: &String) -> bool {
 
 /// Calculate risk score for a potential match
 /// Lower scores indicate lower risk and better outcomes
-pub fn calculate_risk_score(
-    donor: &DonorProfile,
-    recipient: &RecipientProfile,
-) -> u32 {
+pub fn calculate_risk_score(donor: &DonorProfile, recipient: &RecipientProfile) -> u32 {
     let mut risk_score = 0u32;
-    
+
     // Age difference risk
     let age_diff = if donor.age > recipient.age {
         donor.age - recipient.age
@@ -224,31 +216,27 @@ pub fn calculate_risk_score(
         recipient.age - donor.age
     };
     risk_score += age_diff / 5; // 1 point per 5 years difference
-    
+
     // Blood type mismatch risk (even compatible mismatches have some risk)
     if donor.blood_type != recipient.blood_type {
         risk_score += 10;
     }
-    
+
     // Organ-specific risk factors
     risk_score += match donor.organ_type {
-        OrganType::Heart => 20,      // High complexity
-        OrganType::Lung => 25,       // Highest complexity
-        OrganType::Liver => 15,      // Moderate complexity
-        OrganType::Kidney => 10,     // Lowest complexity
-        OrganType::Pancreas => 18,   // Moderate-high complexity
-        OrganType::Intestine => 30,  // Very high complexity
+        OrganType::Heart => 20,     // High complexity
+        OrganType::Lung => 25,      // Highest complexity
+        OrganType::Liver => 15,     // Moderate complexity
+        OrganType::Kidney => 10,    // Lowest complexity
+        OrganType::Pancreas => 18,  // Moderate-high complexity
+        OrganType::Intestine => 30, // Very high complexity
     };
-    
+
     risk_score
 }
 
-
 /// Check if donor and recipient are at the same medical facility
-pub fn is_same_facility(
-    donor: &DonorProfile,
-    recipient: &RecipientProfile,
-) -> bool {
+pub fn is_same_facility(donor: &DonorProfile, recipient: &RecipientProfile) -> bool {
     donor.medical_facility == recipient.medical_facility
 }
 
@@ -259,49 +247,47 @@ pub fn calculate_compatibility_percentage(compatibility_score: u32) -> u32 {
     compatibility_score
 }
 
-
 /// Validate that all required profile fields are present and valid
 pub fn validate_donor_profile_completeness(donor: &DonorProfile) -> Result<(), ContractError> {
     // Age validation
     if donor.age < 18 || donor.age > 80 {
         return Err(ContractError::InvalidMedicalFacility);
     }
-    
+
     // Consent hash validation
     if !validate_consent_format(&donor.consent_hash) {
         return Err(ContractError::ConsentNotProvided);
     }
-    
+
     // HLA profile validation
     validate_hla_profile(&donor.hla_profile)?;
-    
+
     Ok(())
 }
 
 /// Validate that all required recipient profile fields are present and valid
-pub fn validate_recipient_profile_completeness(recipient: &RecipientProfile) -> Result<(), ContractError> {
+pub fn validate_recipient_profile_completeness(
+    recipient: &RecipientProfile,
+) -> Result<(), ContractError> {
     // Age validation
     if recipient.age < 1 || recipient.age > 85 {
         return Err(ContractError::InvalidMedicalFacility);
     }
-    
+
     // Medical priority score validation
     if recipient.medical_priority_score > 1000 {
         return Err(ContractError::InvalidUrgencyLevel);
     }
-    
+
     // HLA profile validation
     validate_hla_profile(&recipient.hla_profile)?;
-    
+
     Ok(())
 }
 
 /// Calculate wait list position based on priority score
 /// Higher priority = lower position number (closer to front of line)
-pub fn calculate_waitlist_position(
-    recipient_priority: u32,
-    total_recipients: u32,
-) -> u32 {
+pub fn calculate_waitlist_position(recipient_priority: u32, total_recipients: u32) -> u32 {
     if recipient_priority > 1000 {
         1 // Critical cases at front
     } else if recipient_priority > 750 {
@@ -321,7 +307,7 @@ pub fn get_urgency_description(env: &Env, urgency_level: &UrgencyLevel) -> Strin
         UrgencyLevel::Medium => "Stable but declining health requiring transplant",
         UrgencyLevel::Low => "Stable condition, can wait for optimal match",
     };
-    
+
     String::from_str(env, description)
 }
 
@@ -341,23 +327,23 @@ pub fn estimate_wait_time(
         OrganType::Pancreas => 730,  // ~2 years average
         OrganType::Intestine => 270, // ~9 months average
     };
-    
+
     // Blood type modifier (universal donors wait longer)
     let blood_modifier = match blood_type {
-        BloodType::O => 1.2,   // Wait 20% longer
-        BloodType::AB => 0.7,  // Wait 30% less (universal recipient)
-        BloodType::A => 1.0,   // Average
-        BloodType::B => 0.9,   // Slightly less
+        BloodType::O => 1.2,  // Wait 20% longer
+        BloodType::AB => 0.7, // Wait 30% less (universal recipient)
+        BloodType::A => 1.0,  // Average
+        BloodType::B => 0.9,  // Slightly less
     };
-    
+
     // Urgency modifier
     let urgency_modifier = match urgency_level {
-        UrgencyLevel::Critical => 0.3,  // Much faster (70% reduction)
-        UrgencyLevel::High => 0.6,      // Faster (40% reduction)
-        UrgencyLevel::Medium => 1.0,    // Average
-        UrgencyLevel::Low => 1.4,       // Slower (40% increase)
+        UrgencyLevel::Critical => 0.3, // Much faster (70% reduction)
+        UrgencyLevel::High => 0.6,     // Faster (40% reduction)
+        UrgencyLevel::Medium => 1.0,   // Average
+        UrgencyLevel::Low => 1.4,      // Slower (40% increase)
     };
-    
+
     ((base_wait as f64) * blood_modifier * urgency_modifier) as u32
 }
 
@@ -369,8 +355,6 @@ pub fn meets_minimum_requirements(
     compatibility_score >= min_compatibility && priority_score > 0
 }
 
-
-
 /// Calculate organ allocation fairness score
 /// Measures how fairly organs are being distributed
 pub fn calculate_fairness_score(
@@ -379,14 +363,14 @@ pub fn calculate_fairness_score(
     urgency_level: &UrgencyLevel,
 ) -> u32 {
     let wait_component = wait_time_days.min(365) / 10; // Max 36 points for 1 year
-    let medical_component = medical_priority / 25;     // Max 40 points
+    let medical_component = medical_priority / 25; // Max 40 points
     let urgency_component = match urgency_level {
         UrgencyLevel::Critical => 24,
         UrgencyLevel::High => 18,
         UrgencyLevel::Medium => 12,
         UrgencyLevel::Low => 6,
     };
-    
+
     wait_component + medical_component + urgency_component
 }
 
@@ -404,11 +388,10 @@ pub fn count_potential_recipients(
 ) -> u32 {
     // Simplified calculation based on population statistics
     let (blood_freq, organ_demand) = calculate_population_statistics(env, blood_type, organ_type);
-    
+
     // Estimate potential recipients
     (blood_freq * organ_demand) / 100
 }
-
 
 /// Generate a unique match ID based on timestamp and ledger sequence
 pub fn generate_match_id(env: &Env) -> u32 {

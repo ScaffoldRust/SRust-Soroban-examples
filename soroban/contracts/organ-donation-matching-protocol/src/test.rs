@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use soroban_sdk::{testutils::Address as _, Address, Env, String, Vec};
     use crate::{
-        BloodType, OrganType, UrgencyLevel, HLAProfile, DonorProfile, RecipientProfile,
-        OrganDonationMatchingContract, OrganDonationMatchingContractClient,
+        BloodType, DonorProfile, HLAProfile, OrganDonationMatchingContract,
+        OrganDonationMatchingContractClient, OrganType, RecipientProfile, UrgencyLevel,
     };
+    use soroban_sdk::{testutils::Address as _, Address, Env, String, Vec};
 
     fn create_test_env() -> (Env, OrganDonationMatchingContractClient<'static>, Address) {
         let env = Env::default();
@@ -12,7 +12,7 @@ mod tests {
         let client = OrganDonationMatchingContractClient::new(&env, &contract_id);
         let admin = Address::generate(&env);
         env.mock_all_auths();
-        
+
         (env, client, admin)
     }
 
@@ -29,23 +29,23 @@ mod tests {
         hla_dr.push_back(String::from_str(env, "DRB1*15:01"));
         hla_dr.push_back(String::from_str(env, "DRB1*03:01"));
 
-        HLAProfile { hla_a, hla_b, hla_dr }
+        HLAProfile {
+            hla_a,
+            hla_b,
+            hla_dr,
+        }
     }
 
     #[test]
     fn test_initialize_contract() {
         let (_env, client, admin) = create_test_env();
-        
-        client.initialize(
-            &admin,
-            &1000,  // max_donors
-            &5000,  // max_recipients
-            &70,    // urgency_weight
-            &60,    // compatibility_threshold
-        );
 
-        
-       
+        client.initialize(
+            &admin, &1000, // max_donors
+            &5000, // max_recipients
+            &70,   // urgency_weight
+            &60,   // compatibility_threshold
+        );
     }
 
     #[test]
@@ -70,12 +70,10 @@ mod tests {
             &consent_hash,
         );
 
-       
-
         // Verify donor was registered
         let registered_donor = client.get_donor(&donor);
         assert!(registered_donor.is_some());
-        
+
         let donor_profile = registered_donor.unwrap();
         assert_eq!(donor_profile.address, donor);
         assert_eq!(donor_profile.blood_type, BloodType::O);
@@ -106,12 +104,10 @@ mod tests {
             &750,
         );
 
-       
-
         // Verify recipient was registered
         let registered_recipient = client.get_recipient(&recipient);
         assert!(registered_recipient.is_some());
-        
+
         let recipient_profile = registered_recipient.unwrap();
         assert_eq!(recipient_profile.address, recipient);
         assert_eq!(recipient_profile.blood_type, BloodType::A);
@@ -129,7 +125,10 @@ mod tests {
         // Perfect matches
         assert_eq!(blood_compatibility_score(&BloodType::A, &BloodType::A), 100);
         assert_eq!(blood_compatibility_score(&BloodType::B, &BloodType::B), 100);
-        assert_eq!(blood_compatibility_score(&BloodType::AB, &BloodType::AB), 100);
+        assert_eq!(
+            blood_compatibility_score(&BloodType::AB, &BloodType::AB),
+            100
+        );
         assert_eq!(blood_compatibility_score(&BloodType::O, &BloodType::O), 100);
 
         // Universal donor O
@@ -176,7 +175,6 @@ mod tests {
         assert!(partial_score < 100 && partial_score > 0);
     }
 
-
     #[test]
     fn test_find_match() {
         let (env, client, admin) = create_test_env();
@@ -193,7 +191,7 @@ mod tests {
         // Register compatible donor
         client.register_donor(
             &donor,
-            &BloodType::O,      // Universal donor
+            &BloodType::O, // Universal donor
             &OrganType::Kidney,
             &hla_profile.clone(),
             &35,
@@ -204,7 +202,7 @@ mod tests {
         // Register recipient
         client.register_recipient(
             &recipient,
-            &BloodType::A,      // Can receive from O
+            &BloodType::A, // Can receive from O
             &OrganType::Kidney,
             &hla_profile,
             &45,
@@ -225,8 +223,6 @@ mod tests {
         assert_eq!(match_result.matched_at, env.ledger().timestamp());
         assert_eq!(match_result.confirmed, false);
         assert_eq!(match_result.medical_facility, medical_facility);
-       
-        
     }
 
     #[test]
@@ -258,7 +254,6 @@ mod tests {
             &900,
             &medical_facility,
         );
-       
 
         // Verify update
         let updated_recipient = client.get_recipient(&recipient).unwrap();
@@ -273,7 +268,7 @@ mod tests {
         let medical_facility = Address::generate(&env);
 
         // Initialize and register donor
-        client.initialize(&admin, &1000, &5000, &70, &60);;
+        client.initialize(&admin, &1000, &5000, &70, &60);
 
         let hla_profile = create_test_hla_profile(&env);
         let consent_hash = String::from_str(&env, "test_consent_hash_1234567890123456");
@@ -320,7 +315,6 @@ mod tests {
 
         // Deactivate recipient
         client.deactivate_recipient(&recipient, &admin);
-       
 
         // Verify deactivation
         let deactivated_recipient = client.get_recipient(&recipient);
@@ -343,7 +337,7 @@ mod tests {
         // Register incompatible donor and recipient
         client.register_donor(
             &donor,
-            &BloodType::A,      // A blood type
+            &BloodType::A, // A blood type
             &OrganType::Kidney,
             &hla_profile.clone(),
             &35,
@@ -353,7 +347,7 @@ mod tests {
 
         client.register_recipient(
             &recipient,
-            &BloodType::B,      // B blood type (incompatible with A)
+            &BloodType::B, // B blood type (incompatible with A)
             &OrganType::Kidney,
             &hla_profile,
             &45,
@@ -366,7 +360,6 @@ mod tests {
         let matches = client.find_match(&recipient);
         // The matching algorithm should return an empty list for incompatible blood types
     }
-
 
     #[test]
     #[should_panic]
@@ -392,7 +385,6 @@ mod tests {
             &medical_facility,
             &consent_hash.clone(),
         );
-       
 
         // Second donor should fail due to capacity
         client.register_donor(
@@ -404,7 +396,6 @@ mod tests {
             &medical_facility,
             &consent_hash,
         );
-       
     }
 
     #[test]
@@ -434,7 +425,7 @@ mod tests {
         client.register_recipient(
             &recipient,
             &BloodType::A,
-            &OrganType::Heart,  // Different organ type
+            &OrganType::Heart, // Different organ type
             &hla_profile,
             &45,
             &UrgencyLevel::Critical,
@@ -444,7 +435,7 @@ mod tests {
 
         // Should not match different organ types
         let matches = client.find_match(&recipient);
-       
+
         // Should return empty matches due to organ type mismatch
     }
 
@@ -478,7 +469,6 @@ mod tests {
             &900,
             &unauthorized_user, // Unauthorized caller
         );
-       
     }
 
     #[test]
@@ -547,8 +537,8 @@ mod tests {
             medical_priority_score: 500,
         };
 
-        let short_wait_score = calculate_priority_score(&recipient, 30, 70);   // 30 days
-        let long_wait_score = calculate_priority_score(&recipient, 365, 70);  // 1 year
+        let short_wait_score = calculate_priority_score(&recipient, 30, 70); // 30 days
+        let long_wait_score = calculate_priority_score(&recipient, 365, 70); // 1 year
 
         // Longer wait time should result in higher priority score
         assert!(long_wait_score > short_wait_score);
@@ -564,7 +554,7 @@ mod tests {
 
         let donor = DonorProfile {
             address: Address::generate(&env),
-            blood_type: BloodType::O,  // Universal donor
+            blood_type: BloodType::O, // Universal donor
             organ_type: OrganType::Kidney,
             hla_profile: hla_profile.clone(),
             age: 35,
@@ -576,10 +566,10 @@ mod tests {
 
         let compatible_recipient = RecipientProfile {
             address: Address::generate(&env),
-            blood_type: BloodType::A,  // Compatible with O
+            blood_type: BloodType::A, // Compatible with O
             organ_type: OrganType::Kidney,
             hla_profile: hla_profile.clone(), // Perfect HLA match
-            age: 40,  // Close age
+            age: 40,                          // Close age
             urgency_level: UrgencyLevel::High,
             registered_at: 0,
             wait_time_days: 0,
@@ -590,10 +580,10 @@ mod tests {
 
         let incompatible_recipient = RecipientProfile {
             address: Address::generate(&env),
-            blood_type: BloodType::AB,  // Less compatible
-            organ_type: OrganType::Heart,  // Different organ
+            blood_type: BloodType::AB,    // Less compatible
+            organ_type: OrganType::Heart, // Different organ
             hla_profile,
-            age: 65,  // Larger age gap
+            age: 65, // Larger age gap
             urgency_level: UrgencyLevel::Low,
             registered_at: 0,
             wait_time_days: 0,
@@ -614,13 +604,11 @@ mod tests {
     #[should_panic]
     fn test_double_initialization_prevention() {
         let (_env, client, admin) = create_test_env();
-        
+
         // First initialization should succeed
         client.initialize(&admin, &1000, &5000, &70, &60);
-       
-        
+
         // Second initialization should fail
         client.initialize(&admin, &1000, &5000, &70, &60);
-       
     }
 }
