@@ -8,178 +8,12 @@ mod utils;
 mod test;
 
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short, Address, Env, Map, String,
+    contract, contractimpl, symbol_short, Address, Env, Map, String,
     Vec,
 };
 
-#[contracttype]
-#[derive(Copy, Clone)]
-#[repr(u32)]
-pub enum DataKey {
-    Initialized = 0,
-    Admin = 1,
-    GridOperators = 2,
-    Producers = 3,
-    Consumers = 4,
-    Orders = 5,
-    Trades = 6,
-    NextOrderId = 7,
-    NextTradeId = 8,
-    MarketConfig = 9,
-    PendingSettlements = 10,
-    TradeHistory = 11,
-    OrderBook = 12,
-    UserOrders = 13,
-    MarketStats = 14,
-}
+use crate::utils::*;
 
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub struct EnergyOrder {
-    pub order_id: u64,
-    pub trader: Address,
-    pub order_type: OrderType,
-    pub quantity_kwh: u64,
-    pub price_per_kwh: u64,
-    pub timestamp: u64,
-    pub order_expiry: u64, // When this order expires and gets cancelled
-    pub status: OrderStatus,
-    pub location: String,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub struct Trade {
-    pub trade_id: u64,
-    pub buy_order_id: u64,
-    pub sell_order_id: u64,
-    pub buyer: Address,
-    pub seller: Address,
-    pub quantity_kwh: u64,
-    pub price_per_kwh: u64,
-    pub total_amount: u64,
-    pub timestamp: u64,
-    pub settlement_status: SettlementStatus,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub struct TraderInfo {
-    pub address: Address,
-    pub role: TraderRole,
-    pub registered_at: u64,
-    pub verification_status: VerificationStatus,
-    pub total_energy_traded: u64,
-    pub reputation_score: u32,
-    pub location: String,
-    pub certificates: Vec<String>,
-    pub active_orders: Vec<u64>,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub struct MarketConfig {
-    pub trading_fee_rate: u32,   // basis points (100 = 1%)
-    pub minimum_trade_size: u64, // kWh
-    pub maximum_trade_size: u64, // kWh
-    pub price_precision: u32,    // decimal places
-    pub settlement_timeout: u64, // seconds
-    pub dispute_period: u64,     // seconds
-    pub max_order_duration: u64, // seconds
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub struct MarketStats {
-    pub total_orders: u64,
-    pub total_trades: u64,
-    pub total_energy_traded: u64,
-    pub average_price: u64,
-    pub active_orders: u64,
-    pub last_trade_price: u64,
-    pub last_updated: u64,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u32)]
-pub enum OrderType {
-    Buy = 0,
-    Sell = 1,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u32)]
-pub enum OrderStatus {
-    Active = 0,
-    Filled = 1,
-    Cancelled = 2,
-    Expired = 3,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u32)]
-pub enum SettlementStatus {
-    Pending = 0,
-    InProgress = 1,
-    Completed = 2,
-    Failed = 3,
-    Disputed = 4,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u32)]
-pub enum TraderRole {
-    Producer = 0,
-    Consumer = 1,
-    GridOperator = 2,
-    Trader = 3,
-    MarketMaker = 4,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u32)]
-pub enum VerificationStatus {
-    Unverified = 0,
-    Pending = 1,
-    Verified = 2,
-    Rejected = 3,
-}
-
-#[contracterror]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-#[repr(u32)]
-pub enum MarketplaceError {
-    AlreadyInitialized = 1,
-    NotInitialized = 2,
-    NotAuthorized = 3,
-    InvalidInput = 4,
-    OrderNotFound = 5,
-    TradeNotFound = 6,
-    InsufficientBalance = 7,
-    OrderExpired = 8,
-    InvalidOrderType = 9,
-    PriceOutOfRange = 11,
-    TraderNotRegistered = 13,
-    TraderNotVerified = 14,
-    OrderAlreadyFilled = 15,
-    SettlementFailed = 16,
-
-    InsufficientLiquidity = 18,
-
-    DuplicateOrder = 20,
-    QuantityOutOfRange = 21,
-    GridOperatorRequired = 22,
-    TradingFeeTooHigh = 23,
-    DisputePeriodActive = 24,
-    SettlementTimeout = 25,
-    InvalidCertificate = 26,
-    LocationMismatch = 27,
-}
 
 #[contract]
 pub struct EnergyTradingMarketplace;
@@ -242,7 +76,7 @@ impl EnergyTradingMarketplace {
             .instance()
             .set(&DataKey::PendingSettlements, &pending_settlements);
 
-        let order_book: Map<String, Vec<u64>> = Map::new(&env); // key: energy_type_order_type
+        let order_book: Map<String, Vec<u64>> = Map::new(&env); 
         env.storage()
             .instance()
             .set(&DataKey::OrderBook, &order_book);
@@ -257,10 +91,10 @@ impl EnergyTradingMarketplace {
             trading_fee_rate,
             minimum_trade_size,
             maximum_trade_size,
-            price_precision: 6,         // stroops precision
-            settlement_timeout: 3600,   // 1 hour
-            dispute_period: 86400,      // 24 hours
-            max_order_duration: 604800, // 1 week
+            price_precision: 6,         
+            settlement_timeout: 3600,   
+            dispute_period: 86400,      
+            max_order_duration: 604800, 
         };
         env.storage()
             .instance()
@@ -472,6 +306,16 @@ impl EnergyTradingMarketplace {
         utils::update_trader_verification(&env, trader, verification_status)
     }
 
+    /// Update trader verification status (alias)
+    pub fn update_trader_verification(
+        env: Env,
+        verifier: Address,
+        trader: Address,
+        verification_status: VerificationStatus,
+    ) -> Result<(), MarketplaceError> {
+        Self::verify_trader(env, verifier, trader, verification_status)
+    }
+
     /// Get order details
     pub fn get_order(env: Env, order_id: u64) -> Result<EnergyOrder, MarketplaceError> {
         Self::check_initialized(&env)?;
@@ -488,6 +332,17 @@ impl EnergyTradingMarketplace {
     pub fn get_trader_info(env: Env, trader: Address) -> Result<TraderInfo, MarketplaceError> {
         Self::check_initialized(&env)?;
         utils::get_trader_info(&env, trader)
+    }
+
+    /// Get trader information (alias for backward compatibility)
+    pub fn get_trader(env: Env, trader: Address) -> Result<TraderInfo, MarketplaceError> {
+        Self::get_trader_info(env, trader)
+    }
+
+    /// Get trade history for a trader
+    pub fn get_trade_history(env: Env, trader: Address) -> Result<Vec<Trade>, MarketplaceError> {
+        Self::check_initialized(&env)?;
+        settlement::get_trades_by_parties(&env, trader)
     }
 
     /// Get active orders for a trader
@@ -572,6 +427,28 @@ impl EnergyTradingMarketplace {
 
         env.events()
             .publish((symbol_short!("grid_add"), admin), operator);
+
+        Ok(())
+    }
+
+    /// Set the payment token contract address (admin only)
+    pub fn set_payment_token_contract(
+        env: Env,
+        admin: Address,
+        token_contract: Address,
+    ) -> Result<(), MarketplaceError> {
+        Self::check_initialized(&env)?;
+        admin.require_auth();
+        Self::check_admin(&env, &admin)?;
+
+        env.storage()
+            .instance()
+            .set(&DataKey::StellarTokenContract, &token_contract);
+
+        env.events().publish(
+            (symbol_short!("token_set"), admin),
+            token_contract,
+        );
 
         Ok(())
     }
