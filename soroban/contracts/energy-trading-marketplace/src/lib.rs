@@ -39,16 +39,12 @@ pub struct EnergyOrder {
     pub order_id: u64,
     pub trader: Address,
     pub order_type: OrderType,
-    pub energy_type: EnergyType,
     pub quantity_kwh: u64,
     pub price_per_kwh: u64,
     pub timestamp: u64,
-    pub expiry: u64,
+    pub order_expiry: u64, // When this order expires and gets cancelled
     pub status: OrderStatus,
     pub location: String,
-    pub delivery_start: u64,
-    pub delivery_end: u64,
-    pub metadata: Option<String>, // JSON metadata for certificates, etc.
 }
 
 #[contracttype]
@@ -59,13 +55,11 @@ pub struct Trade {
     pub sell_order_id: u64,
     pub buyer: Address,
     pub seller: Address,
-    pub energy_type: EnergyType,
     pub quantity_kwh: u64,
     pub price_per_kwh: u64,
     pub total_amount: u64,
     pub timestamp: u64,
     pub settlement_status: SettlementStatus,
-    pub delivery_window: DeliveryWindow,
 }
 
 #[contracttype]
@@ -96,24 +90,6 @@ pub struct MarketConfig {
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
-pub struct DeliveryWindow {
-    pub start_time: u64,
-    pub end_time: u64,
-    pub location: String,
-    pub grid_zone: Option<String>,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub struct TradeMetadata {
-    pub renewable_certificate: Option<String>,
-    pub carbon_offset: Option<u64>,
-    pub grid_source: Option<String>,
-    pub efficiency_rating: Option<u32>,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
 pub struct MarketStats {
     pub total_orders: u64,
     pub total_trades: u64,
@@ -123,10 +99,6 @@ pub struct MarketStats {
     pub last_trade_price: u64,
     pub last_updated: u64,
 }
-
-// ================================================================================
-// ENUMS
-// ================================================================================
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
@@ -139,28 +111,11 @@ pub enum OrderType {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 #[repr(u32)]
-pub enum EnergyType {
-    Solar = 0,
-    Wind = 1,
-    Hydro = 2,
-    Nuclear = 3,
-    NaturalGas = 4,
-    Coal = 5,
-    Geothermal = 6,
-    Biomass = 7,
-    BatteryStorage = 8,
-    Mixed = 9,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-#[repr(u32)]
 pub enum OrderStatus {
     Active = 0,
-    PartiallyFilled = 1,
-    Filled = 2,
-    Cancelled = 3,
-    Expired = 4,
+    Filled = 1,
+    Cancelled = 2,
+    Expired = 3,
 }
 
 #[contracttype]
@@ -195,10 +150,6 @@ pub enum VerificationStatus {
     Rejected = 3,
 }
 
-// ================================================================================
-// ERROR HANDLING
-// ================================================================================
-
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[repr(u32)]
@@ -212,29 +163,23 @@ pub enum MarketplaceError {
     InsufficientBalance = 7,
     OrderExpired = 8,
     InvalidOrderType = 9,
-    InvalidEnergyType = 10,
     PriceOutOfRange = 11,
-    QuantityOutOfRange = 12,
     TraderNotRegistered = 13,
     TraderNotVerified = 14,
     OrderAlreadyFilled = 15,
     SettlementFailed = 16,
-    DeliveryWindowMismatch = 17,
-    InsufficientLiquidity = 18,
-    TradingFeeTooHigh = 19,
-    DuplicateOrder = 20,
-    InvalidDeliveryWindow = 21,
-    GridOperatorRequired = 22,
-    DisputePeriodActive = 23,
-    SettlementTimeout = 24,
-    InvalidCertificate = 25,
-    LocationMismatch = 26,
-    MathOverflow = 27,
-}
 
-// ================================================================================
-// MAIN CONTRACT
-// ================================================================================
+    InsufficientLiquidity = 18,
+
+    DuplicateOrder = 20,
+    QuantityOutOfRange = 21,
+    GridOperatorRequired = 22,
+    TradingFeeTooHigh = 23,
+    DisputePeriodActive = 24,
+    SettlementTimeout = 25,
+    InvalidCertificate = 26,
+    LocationMismatch = 27,
+}
 
 #[contract]
 pub struct EnergyTradingMarketplace;
@@ -416,13 +361,9 @@ impl EnergyTradingMarketplace {
         env: Env,
         trader: Address,
         order_type: OrderType,
-        energy_type: EnergyType,
         quantity_kwh: u64,
         price_per_kwh: u64,
-        delivery_start: u64,
-        delivery_end: u64,
         location: String,
-        metadata: Option<String>,
     ) -> Result<u64, MarketplaceError> {
         Self::check_initialized(&env)?;
         trader.require_auth();
@@ -431,13 +372,7 @@ impl EnergyTradingMarketplace {
         Self::validate_trader_registration(&env, &trader)?;
 
         // Validate order parameters
-        Self::validate_order_params(
-            &env,
-            quantity_kwh,
-            price_per_kwh,
-            delivery_start,
-            delivery_end,
-        )?;
+        Self::validate_order_params(&env, quantity_kwh, price_per_kwh)?;
 
         // Generate order ID
         let order_id = Self::get_next_order_id(&env);
@@ -447,23 +382,19 @@ impl EnergyTradingMarketplace {
             .instance()
             .get(&DataKey::MarketConfig)
             .unwrap();
-        let expiry = timestamp + market_config.max_order_duration;
+        let order_expiry = timestamp + market_config.max_order_duration;
 
         // Create order
         let order = EnergyOrder {
             order_id,
             trader: trader.clone(),
             order_type: order_type.clone(),
-            energy_type: energy_type.clone(),
             quantity_kwh,
             price_per_kwh,
             timestamp,
-            expiry,
+            order_expiry,
             status: OrderStatus::Active,
             location,
-            delivery_start,
-            delivery_end,
-            metadata,
         };
 
         // Store order
@@ -478,7 +409,7 @@ impl EnergyTradingMarketplace {
         // Emit order placement event
         env.events().publish(
             (symbol_short!("ord_place"), trader),
-            (order_id, energy_type, quantity_kwh, price_per_kwh),
+            (order_id, quantity_kwh, price_per_kwh),
         );
 
         // Emit trade events for any immediate matches
@@ -541,10 +472,6 @@ impl EnergyTradingMarketplace {
         utils::update_trader_verification(&env, trader, verification_status)
     }
 
-    // ================================================================================
-    // QUERY FUNCTIONS
-    // ================================================================================
-
     /// Get order details
     pub fn get_order(env: Env, order_id: u64) -> Result<EnergyOrder, MarketplaceError> {
         Self::check_initialized(&env)?;
@@ -582,11 +509,10 @@ impl EnergyTradingMarketplace {
     /// Get order book for specific energy type
     pub fn get_order_book(
         env: Env,
-        energy_type: EnergyType,
         order_type: OrderType,
     ) -> Result<Vec<EnergyOrder>, MarketplaceError> {
         Self::check_initialized(&env)?;
-        trading::get_order_book(&env, energy_type, order_type)
+        trading::get_order_book(&env, order_type)
     }
 
     /// Get recent trades
@@ -596,18 +522,10 @@ impl EnergyTradingMarketplace {
     }
 
     /// Get price history for energy type
-    pub fn get_price_history(
-        env: Env,
-        energy_type: EnergyType,
-        hours: u32,
-    ) -> Result<Vec<u64>, MarketplaceError> {
+    pub fn get_price_history(env: Env, hours: u32) -> Result<Vec<u64>, MarketplaceError> {
         Self::check_initialized(&env)?;
-        utils::get_price_history(&env, energy_type, hours)
+        utils::get_price_history(&env, hours)
     }
-
-    // ================================================================================
-    // ADMIN FUNCTIONS
-    // ================================================================================
 
     /// Update market configuration (admin only)
     pub fn update_market_config(
@@ -657,10 +575,6 @@ impl EnergyTradingMarketplace {
 
         Ok(())
     }
-
-    // ================================================================================
-    // HELPER FUNCTIONS
-    // ================================================================================
 
     fn check_initialized(env: &Env) -> Result<(), MarketplaceError> {
         if !env.storage().instance().has(&DataKey::Initialized) {
@@ -723,8 +637,6 @@ impl EnergyTradingMarketplace {
         env: &Env,
         quantity_kwh: u64,
         price_per_kwh: u64,
-        delivery_start: u64,
-        delivery_end: u64,
     ) -> Result<(), MarketplaceError> {
         let market_config: MarketConfig = env
             .storage()
@@ -742,15 +654,6 @@ impl EnergyTradingMarketplace {
 
         if price_per_kwh == 0 {
             return Err(MarketplaceError::PriceOutOfRange);
-        }
-
-        if delivery_start >= delivery_end {
-            return Err(MarketplaceError::InvalidDeliveryWindow);
-        }
-
-        let current_time = env.ledger().timestamp();
-        if delivery_start <= current_time {
-            return Err(MarketplaceError::InvalidDeliveryWindow);
         }
 
         Ok(())
