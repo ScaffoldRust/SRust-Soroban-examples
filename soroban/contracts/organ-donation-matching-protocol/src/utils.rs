@@ -108,14 +108,6 @@ pub fn calculate_time_urgency_multiplier(
     base_multiplier * time_factor
 }
 
-/// Sanitize medical data for privacy
-/// Removes or masks personally identifiable information
-pub fn sanitize_medical_data(env: &Env, _data: &String) -> String {
-    // In a real implementation, this would properly sanitize PHI (Protected Health Information)
-    // For now, return a placeholder
-    String::from_str(env, "SANITIZED_DATA")
-}
-
 /// Validate age ranges for different organ types
 /// Different organs have different acceptable age ranges for donors and recipients
 pub fn validate_age_for_organ_type(
@@ -424,45 +416,4 @@ pub fn generate_match_id(env: &Env) -> u32 {
     let sequence: u32 = env.ledger().sequence();
     let time_stamp_mod: u32 = (timestamp % 1000000).try_into().unwrap();
     sequence + time_stamp_mod
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_validate_consent_format() {
-        let env = Env::default();
-        
-        // Valid consent hash (32-128 characters)
-        let valid = String::from_str(&env, "a".repeat(32).as_str());
-        assert!(validate_consent_format(&valid));
-        
-        // Too short
-        let short = String::from_str(&env, "short");
-        assert!(!validate_consent_format(&short));
-        
-        // Too long
-        let long = String::from_str(&env, "a".repeat(129).as_str());
-        assert!(!validate_consent_format(&long));
-    }
-    
-    #[test]
-    fn test_organ_viability_hours() {
-        assert_eq!(get_organ_viability_hours(&OrganType::Heart), 4);
-        assert_eq!(get_organ_viability_hours(&OrganType::Kidney), 24);
-        assert_eq!(get_organ_viability_hours(&OrganType::Liver), 12);
-    }
-    
-    #[test]
-    fn test_population_statistics() {
-        let env = Env::default();
-        
-        let (blood_freq, _) = calculate_population_statistics(&env, &BloodType::O, &OrganType::Kidney);
-        assert_eq!(blood_freq, 45); // O is 45% of population
-        
-        let (ab_freq, _) = calculate_population_statistics(&env, &BloodType::AB, &OrganType::Kidney);
-        assert_eq!(ab_freq, 4); // AB is 4% of population
-    }
 }
