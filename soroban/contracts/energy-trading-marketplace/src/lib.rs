@@ -329,14 +329,9 @@ impl EnergyTradingMarketplace {
     }
 
     /// Get trader information
-    pub fn get_trader_info(env: Env, trader: Address) -> Result<TraderInfo, MarketplaceError> {
+    pub fn get_trader(env: Env, trader: Address) -> Result<TraderInfo, MarketplaceError> {
         Self::check_initialized(&env)?;
         utils::get_trader_info(&env, trader)
-    }
-
-    /// Get trader information (alias for backward compatibility)
-    pub fn get_trader(env: Env, trader: Address) -> Result<TraderInfo, MarketplaceError> {
-        Self::get_trader_info(env, trader)
     }
 
     /// Get trade history for a trader
