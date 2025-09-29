@@ -1,0 +1,16 @@
+[package]
+name = "secure-medical-records-sharing"
+version = "0.1.0"
+description = "Soroban smart contract for secure medical records sharing with granular access control"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
