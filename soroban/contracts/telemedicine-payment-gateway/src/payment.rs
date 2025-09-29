@@ -316,9 +316,9 @@ fn is_contract_paused(env: &Env) -> bool {
 /// Get provider hourly rate
 fn get_provider_hourly_rate(env: &Env, provider: Address) -> i128 {
     let storage = env.storage().instance();
-    storage
-        .get(&(Symbol::short("PROV_RATE"), provider))
-        .unwrap_or(0)
+        storage
+            .get(&(Symbol::short("PROV_RAT"), provider))
+            .unwrap_or(0)
 }
 
 /// Get platform fee percentage
