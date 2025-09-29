@@ -2,10 +2,6 @@
 resolver = "2"
 members = [
   "contracts/*",
-
-  "asset-tokenization-contract",
-  "contracts/secure-medical-records-sharing"
-
 ]
 
 [workspace.dependencies]
