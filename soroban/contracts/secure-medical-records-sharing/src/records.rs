@@ -1,3 +1,4 @@
+
 use crate::{DataKey, MedicalRecord, RecordMetadata, AuditEventType, AccessGrant};
 use crate::audit;
 use soroban_sdk::{panic_with_error, Address, BytesN, Env, String, Vec, Map};
@@ -169,3 +170,4 @@ pub fn get_record(env: &Env, caller: Address, record_id: BytesN<32>) -> Option<M
     // For provider access, use the access control functions
     None
 }
+

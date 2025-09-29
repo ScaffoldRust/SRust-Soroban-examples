@@ -1,3 +1,4 @@
+
 .PHONY: build test clean deploy-testnet deploy-mainnet format lint all
 
 # Default target
@@ -132,3 +133,4 @@ help:
 	@echo "  dev-setup      - Set up development environment"
 	@echo "  docs           - Generate documentation"
 	@echo "  help           - Show this help message"
+
