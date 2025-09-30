@@ -4,6 +4,7 @@ use soroban_sdk::{contract, contracterror, contractimpl, contracttype, Address, 
 mod matching;
 mod protocol;
 mod test;
+mod tests;
 mod utils;
 
 pub use matching::*;
