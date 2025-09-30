@@ -24,7 +24,8 @@ fn test_reward_accuracy_multiple_consumers() {
     let consumer2 = create_consumer(&ctx.env);
 
     // Note: Verify reward accuracy and fairness
-    let event_id = setup_multi_consumer_event(&ctx, &[consumer1.clone(), consumer2.clone()], &[30, 70]);
+    let event_id =
+        setup_multi_consumer_event(&ctx, &[consumer1.clone(), consumer2.clone()], &[30, 70]);
 
     advance_time_past_event(&ctx, event_id);
     distribute_rewards(&ctx, event_id);
