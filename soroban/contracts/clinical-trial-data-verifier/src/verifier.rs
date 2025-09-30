@@ -1,7 +1,6 @@
 use soroban_sdk::{
     Env, Address, String, Map, Vec, Error,
 };
-use soroban_sdk::IntoVal;
 use crate::{
     data::{ClinicalData, DataStatus, VerificationEvent, TrialMetadata},
     DataKey,
