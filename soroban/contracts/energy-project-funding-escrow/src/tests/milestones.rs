@@ -82,7 +82,8 @@ fn test_milestone_verification_and_completion() {
     );
 
     // Start the milestone
-    ctx.client.start_milestone(&project_id, &milestone_id, &project_manager);
+    ctx.client
+        .start_milestone(&project_id, &milestone_id, &project_manager);
 
     let milestone = get_milestone(&ctx, project_id, milestone_id);
     assert_eq!(milestone.status, MilestoneStatus::InProgress);
@@ -134,7 +135,8 @@ fn test_unauthorized_milestone_verification() {
         &None,
     );
 
-    ctx.client.start_milestone(&project_id, &milestone_id, &project_manager);
+    ctx.client
+        .start_milestone(&project_id, &milestone_id, &project_manager);
 
     // Unauthorized user tries to verify
     ctx.client.verify_milestone(

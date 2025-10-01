@@ -78,7 +78,9 @@ fn test_validation_functions() {
     // Test milestone funding calculation
     let total_funding = 100_000_000_000i128;
     let percentage = 25u32;
-    let expected_amount = ctx.client.calculate_milestone_funding(&total_funding, &percentage);
+    let expected_amount = ctx
+        .client
+        .calculate_milestone_funding(&total_funding, &percentage);
     assert_eq!(expected_amount, 25_000_000_000i128);
 }
 
@@ -127,10 +129,12 @@ fn test_multiple_deposits() {
     ctx.env.mock_all_auths();
 
     // First deposit
-    ctx.client.deposit(&project_id, &investor, &2_000_000_000i128);
+    ctx.client
+        .deposit(&project_id, &investor, &2_000_000_000i128);
 
     // Second deposit (allowed)
-    ctx.client.deposit(&project_id, &investor, &3_000_000_000i128);
+    ctx.client
+        .deposit(&project_id, &investor, &3_000_000_000i128);
 
     let project = get_project(&ctx, project_id);
     let expected_total = 10_000_000_000i128 + 2_000_000_000i128 + 3_000_000_000i128;

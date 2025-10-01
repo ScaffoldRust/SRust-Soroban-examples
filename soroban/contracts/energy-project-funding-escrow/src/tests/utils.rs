@@ -43,7 +43,11 @@ pub fn create_project_manager(env: &Env) -> Address {
 
 // ============ PROJECT HELPERS ============
 
-pub fn create_basic_project(ctx: &TestContext, investor: &Address, project_manager: &Address) -> u64 {
+pub fn create_basic_project(
+    ctx: &TestContext,
+    investor: &Address,
+    project_manager: &Address,
+) -> u64 {
     ctx.env.mock_all_auths();
 
     ctx.client.initialize_project(
@@ -136,9 +140,15 @@ pub fn create_milestone_with_verifications(
 
 // ============ MILESTONE ACTIONS ============
 
-pub fn start_milestone(ctx: &TestContext, project_id: u64, milestone_id: u32, project_manager: &Address) {
+pub fn start_milestone(
+    ctx: &TestContext,
+    project_id: u64,
+    milestone_id: u32,
+    project_manager: &Address,
+) {
     ctx.env.mock_all_auths();
-    ctx.client.start_milestone(&project_id, &milestone_id, project_manager);
+    ctx.client
+        .start_milestone(&project_id, &milestone_id, project_manager);
 }
 
 pub fn verify_milestone(
@@ -163,10 +173,17 @@ pub fn verify_milestone(
 
 pub fn release_funds(ctx: &TestContext, project_id: u64, milestone_id: u32, investor: &Address) {
     ctx.env.mock_all_auths();
-    ctx.client.release_funds(&project_id, &milestone_id, investor);
+    ctx.client
+        .release_funds(&project_id, &milestone_id, investor);
 }
 
-pub fn request_refund(ctx: &TestContext, project_id: u64, investor: &Address, amount: i128, reason: &str) {
+pub fn request_refund(
+    ctx: &TestContext,
+    project_id: u64,
+    investor: &Address,
+    amount: i128,
+    reason: &str,
+) {
     ctx.env.mock_all_auths();
     ctx.client.request_refund(
         &project_id,
@@ -191,10 +208,13 @@ pub fn get_milestone(ctx: &TestContext, project_id: u64, milestone_id: u32) -> M
     ctx.client.get_milestone(&project_id, &milestone_id)
 }
 
-
 pub fn get_next_project_id(ctx: &TestContext) -> u64 {
     ctx.env.as_contract(&ctx.contract_id, || {
-        ctx.env.storage().instance().get(&DataKey::NextProjectId).unwrap()
+        ctx.env
+            .storage()
+            .instance()
+            .get(&DataKey::NextProjectId)
+            .unwrap()
     })
 }
 
@@ -202,17 +222,31 @@ pub fn get_next_project_id(ctx: &TestContext) -> u64 {
 
 pub fn assert_project_status(ctx: &TestContext, project_id: u64, expected_status: ProjectStatus) {
     let project = get_project(ctx, project_id);
-    assert_eq!(project.status, expected_status, "Project status should match");
+    assert_eq!(
+        project.status, expected_status,
+        "Project status should match"
+    );
 }
 
-pub fn assert_milestone_status(ctx: &TestContext, project_id: u64, milestone_id: u32, expected_status: MilestoneStatus) {
+pub fn assert_milestone_status(
+    ctx: &TestContext,
+    project_id: u64,
+    milestone_id: u32,
+    expected_status: MilestoneStatus,
+) {
     let milestone = get_milestone(ctx, project_id, milestone_id);
-    assert_eq!(milestone.status, expected_status, "Milestone status should match");
+    assert_eq!(
+        milestone.status, expected_status,
+        "Milestone status should match"
+    );
 }
 
 pub fn assert_escrow_status(ctx: &TestContext, project_id: u64, expected_status: EscrowStatus) {
     let project = get_project(ctx, project_id);
-    assert_eq!(project.escrow_status, expected_status, "Escrow status should match");
+    assert_eq!(
+        project.escrow_status, expected_status,
+        "Escrow status should match"
+    );
 }
 
 // ============ WORKFLOW HELPERS ============
@@ -226,7 +260,14 @@ pub fn complete_milestone_workflow(
 ) -> u32 {
     let milestone_id = create_basic_milestone(ctx, project_id, project_manager, funding_percentage);
     start_milestone(ctx, project_id, milestone_id, project_manager);
-    verify_milestone(ctx, project_id, milestone_id, project_manager, "technical_specification", "Approved");
+    verify_milestone(
+        ctx,
+        project_id,
+        milestone_id,
+        project_manager,
+        "technical_specification",
+        "Approved",
+    );
     milestone_id
 }
 
@@ -250,7 +291,8 @@ pub fn setup_project_with_completed_milestone(
         10_000_000,
     );
 
-    let milestone_id = complete_milestone_workflow(ctx, project_id, project_manager, funding_percentage);
+    let milestone_id =
+        complete_milestone_workflow(ctx, project_id, project_manager, funding_percentage);
 
     (project_id, milestone_id)
 }

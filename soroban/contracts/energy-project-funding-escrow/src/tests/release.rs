@@ -42,7 +42,8 @@ fn test_funds_release() {
         &Some(500i128),
     );
 
-    ctx.client.start_milestone(&project_id, &milestone_id, &project_manager);
+    ctx.client
+        .start_milestone(&project_id, &milestone_id, &project_manager);
 
     ctx.client.verify_milestone(
         &project_id,
@@ -56,7 +57,8 @@ fn test_funds_release() {
     assert_eq!(initial_available, total_funding);
 
     // Release funds
-    ctx.client.release_funds(&project_id, &milestone_id, &investor);
+    ctx.client
+        .release_funds(&project_id, &milestone_id, &investor);
 
     let project = get_project(&ctx, project_id);
     let expected_released = (total_funding * 40) / 100; // 40% of total funding
@@ -92,7 +94,8 @@ fn test_refund_request_and_processing() {
     let refund_amount = 5_000_000_000i128;
     let reason = String::from_str(&ctx.env, "Project delays due to permit issues");
 
-    ctx.client.request_refund(&project_id, &investor, &refund_amount, &reason);
+    ctx.client
+        .request_refund(&project_id, &investor, &refund_amount, &reason);
 
     // Process the refund
     ctx.client.process_refund(&project_id, &project_manager);
@@ -132,7 +135,8 @@ fn test_release_without_completed_milestone() {
     );
 
     // Try to release funds without completing milestone
-    ctx.client.release_funds(&project_id, &milestone_id, &investor);
+    ctx.client
+        .release_funds(&project_id, &milestone_id, &investor);
 }
 
 #[test]
@@ -187,7 +191,8 @@ fn test_refund_for_failed_milestone() {
         &None,
     );
 
-    ctx.client.start_milestone(&project_id, &milestone_id, &project_manager);
+    ctx.client
+        .start_milestone(&project_id, &milestone_id, &project_manager);
 
     // Mark milestone as failed
     ctx.client.fail_milestone(

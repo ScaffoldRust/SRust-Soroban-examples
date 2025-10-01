@@ -224,8 +224,13 @@ impl EnergyProjectFundingEscrow {
         energy_type: String,
         expected_capacity: i128,
     ) -> bool {
-        utils::validate_project_setup(&env, &investor, &project_manager, total_funding, milestone_count) &&
-        utils::validate_energy_project_data(&env, &energy_type, expected_capacity)
+        utils::validate_project_setup(
+            &env,
+            &investor,
+            &project_manager,
+            total_funding,
+            milestone_count,
+        ) && utils::validate_energy_project_data(&env, &energy_type, expected_capacity)
     }
 
     /// Calculate milestone funding amount based on percentage
