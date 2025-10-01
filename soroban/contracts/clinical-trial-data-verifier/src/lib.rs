@@ -11,6 +11,9 @@ mod verifier;
 pub use data::{DataStatus, VerificationEvent, TrialMetadata, StudyPhase};
 pub use verifier::Verifier;
 
+#[cfg(test)]
+mod tests; // modular test suite (submission, verification, audit, utils)
+
 #[contracttype]
 pub enum DataKey {
     Admin,                  // Contract administrator
@@ -107,7 +110,7 @@ impl ClinicalTrialVerifier {
         admin.require_auth();
         Self::require_admin(&env, &admin)?;
         
-        let mut verifiers: Vec<Address> = env.storage().instance()
+        let verifiers: Vec<Address> = env.storage().instance()
             .get(&DataKey::Verifiers)
             .unwrap_or_else(|| Vec::new(&env));
         
