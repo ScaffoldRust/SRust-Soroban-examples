@@ -7,7 +7,7 @@ mod types;
 mod utils;
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 pub use escrow::*;
 pub use milestones::*;
