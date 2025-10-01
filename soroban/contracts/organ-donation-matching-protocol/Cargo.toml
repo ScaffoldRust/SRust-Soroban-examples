@@ -1,0 +1,16 @@
+[package]
+name = "organ-donation-matching-protocol"
+version = "0.1.0"
+description = "A secure and fair organ donation matching protocol on Stellar using Soroban, compliant with medical and ethical standards"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

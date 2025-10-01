@@ -179,13 +179,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "asset-tokenization-contract"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 21.7.7",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -264,6 +257,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "carbon_credit_registry"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 21.7.7",
+]
+
+[[package]]
 name = "cc"
 version = "1.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -289,6 +289,14 @@ dependencies = [
  "num-traits",
  "serde",
  "windows-link",
+]
+
+[[package]]
+name = "clinical-trial-data-verifier"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.7",
+ "tiny-keccak",
 ]
 
 [[package]]
@@ -329,6 +337,12 @@ version = "0.1.0"
 dependencies = [
  "soroban-sdk 22.0.7",
 ]
+
+[[package]]
+name = "crunchy"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "460fbee9c2c2f33933d720630a6a0bac33ba7053db5344fac858d4b8952d77d5"
 
 [[package]]
 name = "crypto-bigint"
@@ -575,6 +589,13 @@ dependencies = [
 
 [[package]]
 name = "energy-project-funding-escrow"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.7",
+]
+
+[[package]]
+name = "energy-trading-marketplace"
 version = "0.1.0"
 dependencies = [
  "soroban-sdk 22.0.7",
@@ -918,6 +939,13 @@ name = "once_cell"
 version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
+
+[[package]]
+name = "organ-donation-matching-protocol"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.7",
+]
 
 [[package]]
 name = "p256"
@@ -1746,6 +1774,15 @@ checksum = "3526739392ec93fd8b359c8e98514cb3e8e021beb4e5f597b00a0221f8ed8a49"
 dependencies = [
  "num-conv",
  "time-core",
+]
+
+[[package]]
+name = "tiny-keccak"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237"
+dependencies = [
+ "crunchy",
 ]
 
 [[package]]

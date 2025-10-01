@@ -8,6 +8,8 @@ mod utils;
 
 #[cfg(test)]
 mod test;
+#[cfg(test)]
+mod tests; // additional modular payment lifecycle tests (payment, confirmation, refund, stress)
 
 #[contract]
 pub struct TelemedicinePaymentGateway;
