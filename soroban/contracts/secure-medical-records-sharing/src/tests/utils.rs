@@ -1,3 +1,4 @@
+
 use crate::{
     SecureMedicalRecordsContract, SecureMedicalRecordsContractClient,
     AccessLevel, SensitivityLevel, RecordMetadata, ProviderInfo
@@ -170,3 +171,4 @@ pub const RECORD_TYPE_EMERGENCY: &str = "emergency_record";
 pub fn create_unregistered_provider(env: &Env) -> Address {
     Address::generate(env)
 }
+

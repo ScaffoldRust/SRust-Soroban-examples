@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Env, Map, symbol_short, Address, panic_with_error};
+use soroban_sdk::{contracttype, panic_with_error, symbol_short, Address, Env, Map};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -40,34 +40,49 @@ pub fn start_event(
         rewards_pool,
         reward_rate: 0i128,
     };
-    let mut events: Map<u64, Event> = env.storage().instance().get(&crate::DataKey::Events).unwrap_or_else(|| Map::new(env));
+    let mut events: Map<u64, Event> = env
+        .storage()
+        .instance()
+        .get(&crate::DataKey::Events)
+        .unwrap_or_else(|| Map::new(env));
     events.set(event_id, event.clone());
-    env.storage().instance().set(&crate::DataKey::Events, &events);
+    env.storage()
+        .instance()
+        .set(&crate::DataKey::Events, &events);
     env.events().publish(
         (symbol_short!("evt_start"), caller),
-        (event_id, target_reduction, duration)
+        (event_id, target_reduction, duration),
     );
     event_id
 }
 
 pub fn complete_event(env: &Env, event_id: u64) {
-    let mut events: Map<u64, Event> = env.storage().instance().get(&crate::DataKey::Events).unwrap_or_else(|| Map::new(env));
-    let mut event = events.get(event_id).unwrap_or_else(|| panic_with_error!(env, crate::ContractError::EventNotFound));
+    let mut events: Map<u64, Event> = env
+        .storage()
+        .instance()
+        .get(&crate::DataKey::Events)
+        .unwrap_or_else(|| Map::new(env));
+    let mut event = events
+        .get(event_id)
+        .unwrap_or_else(|| panic_with_error!(env, crate::ContractError::EventNotFound));
     if event.status != EventState::Active {
         panic_with_error!(env, crate::ContractError::InvalidInput);
     }
     event.status = EventState::Completed;
     events.set(event_id, event.clone());
-    env.storage().instance().set(&crate::DataKey::Events, &events);
-    env.events().publish(
-        (symbol_short!("evt_comp"),),
-        event_id
-    );
+    env.storage()
+        .instance()
+        .set(&crate::DataKey::Events, &events);
+    env.events().publish((symbol_short!("evt_comp"),), event_id);
 }
 
 pub fn get_event(env: &Env, event_id: u64) -> Event {
-    let events: Map<u64, Event> = env.storage().instance().get(&crate::DataKey::Events).unwrap_or_else(|| Map::new(env));
-    events.get(event_id).unwrap_or_else(|| panic_with_error!(env, crate::ContractError::EventNotFound))
+    let events: Map<u64, Event> = env
+        .storage()
+        .instance()
+        .get(&crate::DataKey::Events)
+        .unwrap_or_else(|| Map::new(env));
+    events
+        .get(event_id)
+        .unwrap_or_else(|| panic_with_error!(env, crate::ContractError::EventNotFound))
 }
-
-

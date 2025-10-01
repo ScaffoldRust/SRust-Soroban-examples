@@ -1,4 +1,4 @@
-use soroban_sdk::{contracterror, Env, Address, Map, Vec, symbol_short};
+use soroban_sdk::{contracterror, symbol_short, Address, Env, Map, Vec};
 
 use crate::Participation;
 
@@ -14,10 +14,12 @@ pub enum RewardError {
     MathError = 6,
 }
 
-
-
 pub fn calculate_total_reduction(env: &Env, event_id: u64) -> i128 {
-    let participations: Map<Address, Vec<Participation>> = env.storage().instance().get(&crate::DataKey::Participations).unwrap_or_else(|| Map::new(env));
+    let participations: Map<Address, Vec<Participation>> = env
+        .storage()
+        .instance()
+        .get(&crate::DataKey::Participations)
+        .unwrap_or_else(|| Map::new(env));
     let mut total = 0i128;
     for (_consumer, parts) in participations.iter() {
         for part in parts.iter() {
@@ -28,8 +30,6 @@ pub fn calculate_total_reduction(env: &Env, event_id: u64) -> i128 {
     }
     total
 }
-
-
 
 // Safe multiplication with overflow check
 pub fn safe_mul(a: i128, b: i128) -> Result<i128, RewardError> {

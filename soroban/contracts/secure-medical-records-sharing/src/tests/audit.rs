@@ -1,3 +1,4 @@
+
 use crate::tests::utils::*;
 use crate::{AccessLevel, SensitivityLevel, AuditEventType, AuditEntry, DataKey};
 use soroban_sdk::{testutils::Address as _, Address, String, Vec};
@@ -488,3 +489,4 @@ mod tests {
         assert!(log.details.len() > 0, "Consent verification should have details");
     }
 }
+
