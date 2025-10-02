@@ -238,7 +238,7 @@ fn get_donor_by_index(env: &Env, _index: u32) -> Option<DonorProfile> {
 
 /// Sort matches by priority and compatibility scores
 /// Uses bubble sort for simplicity in Soroban environment
-fn sort_matches_by_priority(_env: &Env, matches: &mut Vec<MatchResult>) {
+pub fn sort_matches_by_priority(_env: &Env, matches: &mut Vec<MatchResult>) {
     let len = matches.len();
     if len <= 1 {
         return;

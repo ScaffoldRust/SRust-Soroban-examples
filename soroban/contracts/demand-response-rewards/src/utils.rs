@@ -1,4 +1,4 @@
-use soroban_sdk::{Env, Address, Bytes, contracterror};
+use soroban_sdk::{contracterror, Address, Bytes, Env};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
@@ -10,8 +10,8 @@ pub enum UtilsError {
 }
 
 pub mod safe_math {
-    use core::result::Result;
     use super::UtilsError;
+    use core::result::Result;
 
     pub fn mul_i128(a: i128, b: i128, scale: i128) -> Result<i128, UtilsError> {
         let product = a.checked_mul(b).ok_or(UtilsError::MathOverflow)?;
@@ -64,11 +64,19 @@ pub fn generate_event_id(env: &Env) -> u64 {
 }
 
 pub fn is_operator(env: &Env, caller: Address) -> bool {
-    let operators: soroban_sdk::Map<Address, bool> = env.storage().instance().get(&crate::DataKey::Operators).unwrap_or_else(|| soroban_sdk::Map::new(env));
+    let operators: soroban_sdk::Map<Address, bool> = env
+        .storage()
+        .instance()
+        .get(&crate::DataKey::Operators)
+        .unwrap_or_else(|| soroban_sdk::Map::new(env));
     operators.get(caller).unwrap_or(false)
 }
 
 pub fn is_consumer(env: &Env, caller: Address) -> bool {
-    let consumers: soroban_sdk::Map<Address, bool> = env.storage().instance().get(&crate::DataKey::Consumers).unwrap_or_else(|| soroban_sdk::Map::new(env));
+    let consumers: soroban_sdk::Map<Address, bool> = env
+        .storage()
+        .instance()
+        .get(&crate::DataKey::Consumers)
+        .unwrap_or_else(|| soroban_sdk::Map::new(env));
     consumers.get(caller).unwrap_or(false)
 }
