@@ -1,0 +1,18 @@
+[package]
+name = "health-insurance-claims-automator"
+version = "0.1.0"
+description = "Test suite for health insurance claims automator system"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[dependencies]
+soroban-sdk = "22.0.0"
+
+[dev-dependencies]
+soroban-sdk = { version = "22.0.0", features = ["testutils"] }
