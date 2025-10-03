@@ -1,5 +1,5 @@
-use soroban_sdk::{Address, Env, String, Vec, vec};
 use crate::types::*;
+use soroban_sdk::{vec, Address, Env, String, Vec};
 
 const MIN_FUNDING_AMOUNT: i128 = 1_000_000; // 1 XLM (in stroops)
 const MAX_FUNDING_AMOUNT: i128 = 1_000_000_000_000; // 1M XLM (in stroops)
@@ -93,7 +93,11 @@ pub fn calculate_refund_amount(
     }
 
     let completion_percentage = (milestones_completed * 100) / project.milestone_count;
-    let earned_percentage = if completion_percentage > 100 { 100 } else { completion_percentage };
+    let earned_percentage = if completion_percentage > 100 {
+        100
+    } else {
+        completion_percentage
+    };
 
     let earned_amount = (project.total_funding * earned_percentage as i128) / 100;
     let refundable_amount = project.total_funding - earned_amount;
@@ -105,10 +109,7 @@ pub fn calculate_refund_amount(
     }
 }
 
-pub fn validate_verification_requirements(
-    env: &Env,
-    required_verifications: &Vec<String>,
-) -> bool {
+pub fn validate_verification_requirements(env: &Env, required_verifications: &Vec<String>) -> bool {
     if required_verifications.len() == 0 {
         return false;
     }
@@ -255,7 +256,9 @@ pub fn validate_multisig_setup(
 pub fn format_project_status_message(status: &ProjectStatus) -> String {
     match status {
         ProjectStatus::Active => String::from_str(&Env::default(), "Project is active and funded"),
-        ProjectStatus::Completed => String::from_str(&Env::default(), "Project successfully completed"),
+        ProjectStatus::Completed => {
+            String::from_str(&Env::default(), "Project successfully completed")
+        }
         ProjectStatus::Cancelled => String::from_str(&Env::default(), "Project was cancelled"),
         ProjectStatus::Refunded => String::from_str(&Env::default(), "Project funds were refunded"),
     }
@@ -265,7 +268,11 @@ pub fn format_milestone_status_message(status: &MilestoneStatus) -> String {
     match status {
         MilestoneStatus::Pending => String::from_str(&Env::default(), "Milestone awaiting start"),
         MilestoneStatus::InProgress => String::from_str(&Env::default(), "Milestone in progress"),
-        MilestoneStatus::Completed => String::from_str(&Env::default(), "Milestone completed successfully"),
-        MilestoneStatus::Failed => String::from_str(&Env::default(), "Milestone failed to complete"),
+        MilestoneStatus::Completed => {
+            String::from_str(&Env::default(), "Milestone completed successfully")
+        }
+        MilestoneStatus::Failed => {
+            String::from_str(&Env::default(), "Milestone failed to complete")
+        }
     }
 }

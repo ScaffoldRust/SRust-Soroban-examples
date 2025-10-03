@@ -1,6 +1,6 @@
-use soroban_sdk::{Address, Env, String, Symbol, Vec};
 use crate::types::*;
-use crate::utils::{validate_project_setup, validate_funding_amount};
+use crate::utils::{validate_funding_amount, validate_project_setup};
+use soroban_sdk::{Address, Env, String, Symbol, Vec};
 
 pub fn initialize_project(
     env: Env,
@@ -15,11 +15,18 @@ pub fn initialize_project(
 ) -> u64 {
     investor.require_auth();
 
-    if !validate_project_setup(&env, &investor, &project_manager, total_funding, milestone_count) {
+    if !validate_project_setup(
+        &env,
+        &investor,
+        &project_manager,
+        total_funding,
+        milestone_count,
+    ) {
         panic!("Invalid project setup parameters");
     }
 
-    let project_id: u64 = env.storage()
+    let project_id: u64 = env
+        .storage()
         .instance()
         .get(&DataKey::NextProjectId)
         .unwrap_or(1);
@@ -64,7 +71,8 @@ pub fn deposit_funds(env: Env, project_id: u64, depositor: Address, amount: i128
         panic!("Invalid funding amount");
     }
 
-    let mut project: ProjectDetails = env.storage()
+    let mut project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -92,7 +100,8 @@ pub fn deposit_funds(env: Env, project_id: u64, depositor: Address, amount: i128
 pub fn release_funds(env: Env, project_id: u64, milestone_id: u32, approver: Address) {
     approver.require_auth();
 
-    let mut project: ProjectDetails = env.storage()
+    let mut project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -101,7 +110,8 @@ pub fn release_funds(env: Env, project_id: u64, milestone_id: u32, approver: Add
         panic!("Project is not active");
     }
 
-    let milestone: MilestoneDetails = env.storage()
+    let milestone: MilestoneDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Milestone(project_id, milestone_id))
         .unwrap_or_else(|| panic!("Milestone not found"));
@@ -110,7 +120,8 @@ pub fn release_funds(env: Env, project_id: u64, milestone_id: u32, approver: Add
         panic!("Milestone not completed");
     }
 
-    let mut pending_release: PendingRelease = env.storage()
+    let mut pending_release: PendingRelease = env
+        .storage()
         .persistent()
         .get(&DataKey::PendingRelease(project_id))
         .unwrap_or_else(|| panic!("No pending release found"));
@@ -119,7 +130,8 @@ pub fn release_funds(env: Env, project_id: u64, milestone_id: u32, approver: Add
         panic!("Milestone mismatch");
     }
 
-    let multisig_config: Option<MultisigConfig> = env.storage()
+    let multisig_config: Option<MultisigConfig> = env
+        .storage()
         .persistent()
         .get(&DataKey::MultisigRequirement(project_id));
 
@@ -141,7 +153,12 @@ pub fn release_funds(env: Env, project_id: u64, milestone_id: u32, approver: Add
 
                 env.events().publish(
                     (Symbol::new(&env, "ApprovalAdded"),),
-                    (project_id, milestone_id, approver, pending_release.current_approvals),
+                    (
+                        project_id,
+                        milestone_id,
+                        approver,
+                        pending_release.current_approvals,
+                    ),
                 );
                 return;
             }
@@ -177,14 +194,20 @@ pub fn release_funds(env: Env, project_id: u64, milestone_id: u32, approver: Add
 
     env.events().publish(
         (Symbol::new(&env, "FundsReleased"),),
-        (project_id, milestone_id, project.project_manager, release_amount),
+        (
+            project_id,
+            milestone_id,
+            project.project_manager,
+            release_amount,
+        ),
     );
 }
 
 pub fn request_refund(env: Env, project_id: u64, requester: Address, amount: i128, reason: String) {
     requester.require_auth();
 
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -225,12 +248,14 @@ pub fn request_refund(env: Env, project_id: u64, requester: Address, amount: i12
 pub fn process_refund(env: Env, project_id: u64, approver: Address) {
     approver.require_auth();
 
-    let mut project: ProjectDetails = env.storage()
+    let mut project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
 
-    let mut refund_request: RefundRequest = env.storage()
+    let mut refund_request: RefundRequest = env
+        .storage()
         .persistent()
         .get(&DataKey::RefundRequest(project_id))
         .unwrap_or_else(|| panic!("No refund request found"));
@@ -271,7 +296,8 @@ pub fn get_project_details(env: Env, project_id: u64) -> ProjectDetails {
 }
 
 pub fn get_available_funds(env: Env, project_id: u64) -> i128 {
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -289,7 +315,8 @@ pub fn setup_multisig(
 ) {
     setup_by.require_auth();
 
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
