@@ -1,8 +1,6 @@
-use soroban_sdk::{Env, Address, BytesN, String, Map, Vec, Bytes};
+use soroban_sdk::{Address, Bytes, BytesN, Env, Map, String, Vec};
 
-use crate::{
-    CarbonCredit, CreditStatus, CreditEvent, EventType, DataKey,
-};
+use crate::{CarbonCredit, CreditEvent, CreditStatus, DataKey, EventType};
 
 /// Record a credit event in the history
 pub fn record_credit_event(
@@ -13,7 +11,10 @@ pub fn record_credit_event(
     to: Option<Address>,
     quantity: i128,
 ) {
-    let event_count: u32 = env.storage().instance().get(&DataKey::EventCount(credit_id.clone()))
+    let event_count: u32 = env
+        .storage()
+        .instance()
+        .get(&DataKey::EventCount(credit_id.clone()))
         .unwrap_or(0);
 
     let event = CreditEvent {
@@ -27,29 +28,35 @@ pub fn record_credit_event(
         metadata: Map::new(env),
     };
 
-    env.storage().instance().set(&DataKey::CreditEvent(credit_id.clone(), event_count), &event);
-    env.storage().instance().set(&DataKey::EventCount(credit_id.clone()), &(event_count + 1));
+    env.storage().instance().set(
+        &DataKey::CreditEvent(credit_id.clone(), event_count),
+        &event,
+    );
+    env.storage()
+        .instance()
+        .set(&DataKey::EventCount(credit_id.clone()), &(event_count + 1));
 }
 
 /// Get credit status and details
-pub fn get_credit_status(
-    env: &Env,
-    credit_id: BytesN<32>,
-) -> Option<CarbonCredit> {
+pub fn get_credit_status(env: &Env, credit_id: BytesN<32>) -> Option<CarbonCredit> {
     env.storage().instance().get(&DataKey::Credit(credit_id))
 }
 
 /// Get credit transaction history
-pub fn get_credit_history(
-    env: &Env,
-    credit_id: BytesN<32>,
-) -> Vec<CreditEvent> {
-    let event_count: u32 = env.storage().instance().get(&DataKey::EventCount(credit_id.clone()))
+pub fn get_credit_history(env: &Env, credit_id: BytesN<32>) -> Vec<CreditEvent> {
+    let event_count: u32 = env
+        .storage()
+        .instance()
+        .get(&DataKey::EventCount(credit_id.clone()))
         .unwrap_or(0);
 
     let mut events = Vec::new(env);
     for i in 0..event_count {
-        if let Some(event) = env.storage().instance().get::<DataKey, crate::CreditEvent>(&DataKey::CreditEvent(credit_id.clone(), i)) {
+        if let Some(event) = env
+            .storage()
+            .instance()
+            .get::<DataKey, crate::CreditEvent>(&DataKey::CreditEvent(credit_id.clone(), i))
+        {
             events.push_back(event);
         }
     }

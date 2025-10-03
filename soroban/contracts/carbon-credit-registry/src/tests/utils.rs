@@ -6,8 +6,7 @@ use soroban_sdk::{
 };
 
 use crate::{
-    CarbonCreditRegistry, CarbonCreditRegistryClient, CreditStatus,
-    RetirementParams, TradingParams,
+    CarbonCreditRegistry, CarbonCreditRegistryClient, CreditStatus, RetirementParams, TradingParams,
 };
 
 // ============ TEST CONTEXT ============
@@ -46,7 +45,8 @@ pub fn setup_with_issuer() -> (TestContext, Address) {
     standards.push_back(String::from_str(&ctx.env, "Verra"));
     standards.push_back(String::from_str(&ctx.env, "Gold Standard"));
 
-    ctx.client.register_issuer(&issuer, &issuer_name, &standards);
+    ctx.client
+        .register_issuer(&issuer, &issuer_name, &standards);
 
     (ctx, issuer)
 }
@@ -56,11 +56,7 @@ pub fn setup_with_issuer() -> (TestContext, Address) {
 /// Issues a basic carbon credit for testing
 /// Note: Uses incrementing timestamp to ensure unique credit IDs
 #[allow(dead_code)]
-pub fn issue_test_credit(
-    ctx: &TestContext,
-    issuer: &Address,
-    quantity: i128,
-) -> BytesN<32> {
+pub fn issue_test_credit(ctx: &TestContext, issuer: &Address, quantity: i128) -> BytesN<32> {
     let project_type = String::from_str(&ctx.env, "Reforestation");
     let project_location = String::from_str(&ctx.env, "Brazil");
     let verification_standard = String::from_str(&ctx.env, "Verra");
@@ -230,5 +226,8 @@ pub fn assert_contract_stats(
     assert_eq!(issuer_count, expected_issuer_count, "Issuer count mismatch");
     assert_eq!(credit_count, expected_credit_count, "Credit count mismatch");
     assert_eq!(total_issued, expected_total_issued, "Total issued mismatch");
-    assert_eq!(total_retired, expected_total_retired, "Total retired mismatch");
+    assert_eq!(
+        total_retired, expected_total_retired,
+        "Total retired mismatch"
+    );
 }

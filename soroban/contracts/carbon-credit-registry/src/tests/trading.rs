@@ -1,11 +1,8 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address,
-};
+use soroban_sdk::{testutils::Address as _, Address};
 
-use crate::{CreditStatus};
+use crate::CreditStatus;
 
 use super::utils::*;
 
@@ -83,7 +80,10 @@ fn test_trading_history() {
 
     // Get credit history (should include issuance + 2 trades = 3 events)
     let history = ctx.client.get_credit_history(&credit_id);
-    assert!(history.len() >= 3, "Should have at least 3 events (issuance + 2 trades)");
+    assert!(
+        history.len() >= 3,
+        "Should have at least 3 events (issuance + 2 trades)"
+    );
 }
 
 // ============ EDGE CASE TESTS ============
@@ -177,8 +177,17 @@ fn test_trade_different_verification_standards() {
     let (ctx, issuer) = setup_with_issuer();
 
     // Issue credits with different standards
-    let verra_credit = issue_credit_with_params(&ctx, &issuer, "Reforestation", "Brazil", "Verra", 2024, 1000);
-    let gold_credit = issue_credit_with_params(&ctx, &issuer, "Solar", "India", "Gold Standard", 2024, 1000);
+    let verra_credit = issue_credit_with_params(
+        &ctx,
+        &issuer,
+        "Reforestation",
+        "Brazil",
+        "Verra",
+        2024,
+        1000,
+    );
+    let gold_credit =
+        issue_credit_with_params(&ctx, &issuer, "Solar", "India", "Gold Standard", 2024, 1000);
 
     let buyer = Address::generate(&ctx.env);
 

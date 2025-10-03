@@ -1,11 +1,8 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address, BytesN, Map, String, Vec,
-};
+use soroban_sdk::{testutils::Address as _, Address, BytesN, Map, String, Vec};
 
-use crate::{CreditStatus};
+use crate::CreditStatus;
 
 use super::utils::*;
 
@@ -31,7 +28,8 @@ fn test_register_issuer() {
     standards.push_back(String::from_str(&ctx.env, "Verra"));
     standards.push_back(String::from_str(&ctx.env, "Gold Standard"));
 
-    ctx.client.register_issuer(&issuer, &issuer_name, &standards);
+    ctx.client
+        .register_issuer(&issuer, &issuer_name, &standards);
 
     // Verify issuer profile
     let profile = ctx.client.get_issuer_profile(&issuer);
@@ -60,9 +58,21 @@ fn test_register_multiple_issuers() {
     let mut standards = Vec::new(&ctx.env);
     standards.push_back(String::from_str(&ctx.env, "Verra"));
 
-    ctx.client.register_issuer(&issuer1, &String::from_str(&ctx.env, "Issuer 1"), &standards);
-    ctx.client.register_issuer(&issuer2, &String::from_str(&ctx.env, "Issuer 2"), &standards);
-    ctx.client.register_issuer(&issuer3, &String::from_str(&ctx.env, "Issuer 3"), &standards);
+    ctx.client.register_issuer(
+        &issuer1,
+        &String::from_str(&ctx.env, "Issuer 1"),
+        &standards,
+    );
+    ctx.client.register_issuer(
+        &issuer2,
+        &String::from_str(&ctx.env, "Issuer 2"),
+        &standards,
+    );
+    ctx.client.register_issuer(
+        &issuer3,
+        &String::from_str(&ctx.env, "Issuer 3"),
+        &standards,
+    );
 
     // Verify all issuers registered
     let (issuer_count, _, _, _) = ctx.client.get_contract_stats();
@@ -124,12 +134,22 @@ fn test_issue_credit_different_project_types() {
     ];
 
     for (project_type, location, standard) in project_types {
-        let credit_id = issue_credit_with_params(&ctx, &issuer, project_type, location, standard, 2024, 1000);
+        let credit_id =
+            issue_credit_with_params(&ctx, &issuer, project_type, location, standard, 2024, 1000);
 
         let credit = ctx.client.get_credit_status(&credit_id).unwrap();
-        assert_eq!(credit.project_type, String::from_str(&ctx.env, project_type));
-        assert_eq!(credit.project_location, String::from_str(&ctx.env, location));
-        assert_eq!(credit.verification_standard, String::from_str(&ctx.env, standard));
+        assert_eq!(
+            credit.project_type,
+            String::from_str(&ctx.env, project_type)
+        );
+        assert_eq!(
+            credit.project_location,
+            String::from_str(&ctx.env, location)
+        );
+        assert_eq!(
+            credit.verification_standard,
+            String::from_str(&ctx.env, standard)
+        );
     }
 
     let (_, credit_count, _, _) = ctx.client.get_contract_stats();
@@ -188,10 +208,26 @@ fn test_high_volume_credit_issuance() {
 
     // Issue 20 credits to test scalability
     let credit_ids = [
-        "CREDIT_00", "CREDIT_01", "CREDIT_02", "CREDIT_03", "CREDIT_04",
-        "CREDIT_05", "CREDIT_06", "CREDIT_07", "CREDIT_08", "CREDIT_09",
-        "CREDIT_10", "CREDIT_11", "CREDIT_12", "CREDIT_13", "CREDIT_14",
-        "CREDIT_15", "CREDIT_16", "CREDIT_17", "CREDIT_18", "CREDIT_19",
+        "CREDIT_00",
+        "CREDIT_01",
+        "CREDIT_02",
+        "CREDIT_03",
+        "CREDIT_04",
+        "CREDIT_05",
+        "CREDIT_06",
+        "CREDIT_07",
+        "CREDIT_08",
+        "CREDIT_09",
+        "CREDIT_10",
+        "CREDIT_11",
+        "CREDIT_12",
+        "CREDIT_13",
+        "CREDIT_14",
+        "CREDIT_15",
+        "CREDIT_16",
+        "CREDIT_17",
+        "CREDIT_18",
+        "CREDIT_19",
     ];
 
     for _ in credit_ids {
@@ -213,9 +249,18 @@ fn test_issue_credit_with_metadata() {
     let verification_hash = BytesN::from_array(&ctx.env, &[1u8; 32]);
 
     let mut metadata = Map::new(&ctx.env);
-    metadata.set(String::from_str(&ctx.env, "project_name"), String::from_str(&ctx.env, "Amazon Reforestation"));
-    metadata.set(String::from_str(&ctx.env, "sdg_goals"), String::from_str(&ctx.env, "13,15"));
-    metadata.set(String::from_str(&ctx.env, "co-benefits"), String::from_str(&ctx.env, "biodiversity"));
+    metadata.set(
+        String::from_str(&ctx.env, "project_name"),
+        String::from_str(&ctx.env, "Amazon Reforestation"),
+    );
+    metadata.set(
+        String::from_str(&ctx.env, "sdg_goals"),
+        String::from_str(&ctx.env, "13,15"),
+    );
+    metadata.set(
+        String::from_str(&ctx.env, "co-benefits"),
+        String::from_str(&ctx.env, "biodiversity"),
+    );
 
     let credit_id = ctx.client.issue_credit(
         &issuer,

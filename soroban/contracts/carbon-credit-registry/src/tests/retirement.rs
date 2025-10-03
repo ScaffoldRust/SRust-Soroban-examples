@@ -1,11 +1,8 @@
 #![cfg(test)]
 
-use soroban_sdk::{
-    testutils::{Address as _},
-    Address,
-};
+use soroban_sdk::{testutils::Address as _, Address};
 
-use crate::{CreditStatus};
+use crate::CreditStatus;
 
 use super::utils::*;
 
@@ -114,7 +111,10 @@ fn test_retirement_history() {
 
     // Get history (should have issuance + retirement)
     let history = ctx.client.get_credit_history(&credit_id);
-    assert!(history.len() >= 2, "Should have at least 2 events (issuance + retirement)");
+    assert!(
+        history.len() >= 2,
+        "Should have at least 2 events (issuance + retirement)"
+    );
 }
 
 // ============ EDGE CASE TESTS ============
@@ -185,9 +185,26 @@ fn test_retire_different_project_types() {
     let (ctx, issuer) = setup_with_issuer();
 
     // Issue credits for different project types
-    let reforestation = issue_credit_with_params(&ctx, &issuer, "Reforestation", "Brazil", "Verra", 2024, 1000);
-    let solar = issue_credit_with_params(&ctx, &issuer, "Solar Energy", "India", "Gold Standard", 2024, 2000);
-    let wind = issue_credit_with_params(&ctx, &issuer, "Wind Energy", "Denmark", "Verra", 2024, 1500);
+    let reforestation = issue_credit_with_params(
+        &ctx,
+        &issuer,
+        "Reforestation",
+        "Brazil",
+        "Verra",
+        2024,
+        1000,
+    );
+    let solar = issue_credit_with_params(
+        &ctx,
+        &issuer,
+        "Solar Energy",
+        "India",
+        "Gold Standard",
+        2024,
+        2000,
+    );
+    let wind =
+        issue_credit_with_params(&ctx, &issuer, "Wind Energy", "Denmark", "Verra", 2024, 1500);
 
     // Retire all credits
     retire_test_credit(&ctx, reforestation.clone(), &issuer, 1000);
@@ -209,9 +226,33 @@ fn test_retire_different_vintages() {
     let (ctx, issuer) = setup_with_issuer();
 
     // Issue credits with different vintage years
-    let vintage_2020 = issue_credit_with_params(&ctx, &issuer, "Reforestation", "Brazil", "Verra", 2020, 1000);
-    let vintage_2022 = issue_credit_with_params(&ctx, &issuer, "Reforestation", "Brazil", "Verra", 2022, 1000);
-    let vintage_2024 = issue_credit_with_params(&ctx, &issuer, "Reforestation", "Brazil", "Verra", 2024, 1000);
+    let vintage_2020 = issue_credit_with_params(
+        &ctx,
+        &issuer,
+        "Reforestation",
+        "Brazil",
+        "Verra",
+        2020,
+        1000,
+    );
+    let vintage_2022 = issue_credit_with_params(
+        &ctx,
+        &issuer,
+        "Reforestation",
+        "Brazil",
+        "Verra",
+        2022,
+        1000,
+    );
+    let vintage_2024 = issue_credit_with_params(
+        &ctx,
+        &issuer,
+        "Reforestation",
+        "Brazil",
+        "Verra",
+        2024,
+        1000,
+    );
 
     // Retire all vintages
     retire_test_credit(&ctx, vintage_2020, &issuer, 1000);
