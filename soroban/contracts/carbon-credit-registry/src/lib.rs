@@ -7,7 +7,7 @@ pub mod trading;
 pub mod utils;
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 // Core data structures for carbon credits
 #[contracttype]
