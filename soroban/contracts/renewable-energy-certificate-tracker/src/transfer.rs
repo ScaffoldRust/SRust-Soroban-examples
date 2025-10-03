@@ -1,6 +1,6 @@
 use soroban_sdk::{Address, BytesN, Env, String, Vec};
 
-use crate::{ContractStats, DataKey, EventType, REC, RECEvent, RECStatus};
+use crate::{ContractStats, DataKey, EventType, RECEvent, RECStatus, REC};
 
 /// Transfers a REC to a new owner
 pub fn transfer_rec(

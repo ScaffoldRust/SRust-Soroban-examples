@@ -1,11 +1,7 @@
 use soroban_sdk::{Address, Bytes, BytesN, Env};
 
 /// Generates a unique REC ID based on issuer and verification hash
-pub fn generate_rec_id(
-    env: &Env,
-    _issuer: &Address,
-    verification_hash: &BytesN<32>,
-) -> BytesN<32> {
+pub fn generate_rec_id(env: &Env, _issuer: &Address, verification_hash: &BytesN<32>) -> BytesN<32> {
     let timestamp = env.ledger().timestamp();
     let timestamp_bytes = timestamp.to_be_bytes();
 
@@ -39,7 +35,10 @@ pub fn is_authorized_issuer(env: &Env, issuer: &Address) -> bool {
     use crate::{DataKey, IssuerInfo};
 
     let issuer_key = DataKey::Issuer(issuer.clone());
-    if let Some(issuer_info) = env.storage().persistent().get::<DataKey, IssuerInfo>(&issuer_key)
+    if let Some(issuer_info) = env
+        .storage()
+        .persistent()
+        .get::<DataKey, IssuerInfo>(&issuer_key)
     {
         issuer_info.authorized
     } else {
@@ -48,11 +47,7 @@ pub fn is_authorized_issuer(env: &Env, issuer: &Address) -> bool {
 }
 
 /// Validates REC transfer parameters
-pub fn validate_transfer(
-    capacity_mwh: i128,
-    from: &Address,
-    to: &Address,
-) -> bool {
+pub fn validate_transfer(capacity_mwh: i128, from: &Address, to: &Address) -> bool {
     capacity_mwh > 0 && from != to
 }
 
@@ -62,11 +57,7 @@ pub fn validate_retirement(capacity_mwh: i128) -> bool {
 }
 
 /// Creates a transaction hash for events
-pub fn create_transaction_hash(
-    env: &Env,
-    rec_id: &BytesN<32>,
-    timestamp: u64,
-) -> BytesN<32> {
+pub fn create_transaction_hash(env: &Env, rec_id: &BytesN<32>, timestamp: u64) -> BytesN<32> {
     let timestamp_bytes = timestamp.to_be_bytes();
 
     let mut combined = [0u8; 40];

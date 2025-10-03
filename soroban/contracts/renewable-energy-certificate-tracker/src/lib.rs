@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Vec, BytesN, String, Map};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, BytesN, Env, Map, String, Vec};
 
 pub mod certificate;
 pub mod transfer;
@@ -156,7 +156,9 @@ impl RenewableEnergyCertificateTracker {
             total_issued: 0,
         };
 
-        env.storage().persistent().set(&DataKey::Issuer(issuer), &issuer_info);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Issuer(issuer), &issuer_info);
     }
 
     /// Issue a new REC for verified renewable energy production

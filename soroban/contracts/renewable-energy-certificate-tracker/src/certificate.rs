@@ -1,7 +1,7 @@
 use soroban_sdk::{Address, BytesN, Env, Map, String, Vec};
 
 use crate::{
-    utils, ContractStats, DataKey, EnergySource, EventType, IssuerInfo, REC, RECEvent, RECStatus,
+    utils, ContractStats, DataKey, EnergySource, EventType, IssuerInfo, RECEvent, RECStatus, REC,
 };
 
 /// Issues a new REC for verified renewable energy production
@@ -106,7 +106,10 @@ pub fn verify_rec(env: &Env, rec_id: BytesN<32>) -> bool {
 
     // Verify issuer is still authorized
     let issuer_key = DataKey::Issuer(rec.issuer.clone());
-    if let Some(issuer_info) = env.storage().persistent().get::<DataKey, IssuerInfo>(&issuer_key)
+    if let Some(issuer_info) = env
+        .storage()
+        .persistent()
+        .get::<DataKey, IssuerInfo>(&issuer_key)
     {
         if !issuer_info.authorized {
             return false;
