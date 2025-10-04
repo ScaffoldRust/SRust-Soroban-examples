@@ -9,7 +9,7 @@ mod optimization;
 mod utils;
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 use resource::*;
 use optimization::*;
