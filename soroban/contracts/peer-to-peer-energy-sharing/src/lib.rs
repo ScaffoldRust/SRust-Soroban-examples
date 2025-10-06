@@ -33,21 +33,12 @@ impl PeerToPeerEnergySharing {
         env.storage()
             .instance()
             .set(&DataKey::TokenContract, &token_contract);
-        env.storage().instance().set(&DataKey::NextAgreementId, &1u64);
-        env.storage().instance().set(&DataKey::NextTransactionId, &1u64);
-
-        // Initialize empty maps
-        let prosumers: Map<Address, bool> = Map::new(&env);
-        let agreements: Map<u64, EnergyAgreement> = Map::new(&env);
-        let transactions: Map<u64, EnergyTransaction> = Map::new(&env);
-
-        env.storage().instance().set(&DataKey::Prosumers, &prosumers);
         env.storage()
             .instance()
-            .set(&DataKey::Agreements, &agreements);
+            .set(&DataKey::NextAgreementId, &1u64);
         env.storage()
             .instance()
-            .set(&DataKey::Transactions, &transactions);
+            .set(&DataKey::NextTransactionId, &1u64);
 
         Ok(())
     }
@@ -64,7 +55,9 @@ impl PeerToPeerEnergySharing {
             .unwrap_or_else(|| Map::new(&env));
 
         prosumers.set(prosumer, true);
-        env.storage().instance().set(&DataKey::Prosumers, &prosumers);
+        env.storage()
+            .instance()
+            .set(&DataKey::Prosumers, &prosumers);
 
         Ok(())
     }
@@ -109,7 +102,13 @@ impl PeerToPeerEnergySharing {
         Self::check_initialized(&env)?;
         provider.require_auth();
 
-        sharing::deliver_energy(&env, agreement_id, energy_delivered_kwh, meter_reading, provider)
+        sharing::deliver_energy(
+            &env,
+            agreement_id,
+            energy_delivered_kwh,
+            meter_reading,
+            provider,
+        )
     }
 
     /// Settle payment for delivered energy
@@ -166,9 +165,7 @@ impl PeerToPeerEnergySharing {
             .get(&DataKey::Prosumers)
             .unwrap_or_else(|| Map::new(env));
 
-        if !prosumers.contains_key(provider.clone())
-            || !prosumers.contains_key(consumer.clone())
-        {
+        if !prosumers.contains_key(provider.clone()) || !prosumers.contains_key(consumer.clone()) {
             return Err(SharingError::ProsumerNotRegistered);
         }
 
