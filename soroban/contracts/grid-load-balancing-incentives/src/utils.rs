@@ -12,6 +12,7 @@ pub enum DataKey {
     Participations = 5,
     NextEventId = 6,
     TokenContract = 7,
+    ParticipationCounter = 8,
 }
 
 #[contracttype]
