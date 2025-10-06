@@ -103,6 +103,7 @@ fn execute_reward_payment(
         .unwrap();
 
     // Execute transfer from admin to consumer
+    // Note: This requires admin to have authorized the contract to transfer tokens
     let token_client = token::Client::new(env, &token_contract);
     token_client.transfer(
         &admin,
