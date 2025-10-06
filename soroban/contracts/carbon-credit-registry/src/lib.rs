@@ -1,13 +1,13 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Vec, BytesN, String, Map};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, BytesN, Env, Map, String, Vec};
 
 pub mod credits;
 pub mod trading;
 pub mod utils;
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 // Core data structures for carbon credits
 #[contracttype]
@@ -77,7 +77,7 @@ pub struct TradingParams {
     pub from: Address,
     pub to: Address,
     pub quantity: i128,
-    pub price: i128, // Price per ton of CO2
+    pub price: i128,            // Price per ton of CO2
     pub payment_token: Address, // Payment token address
 }
 
@@ -101,7 +101,7 @@ pub enum DataKey {
     CreditCount,
     EventCount(BytesN<32>), // credit_id -> event_count
     Admin,
-    TradingFeeRate, // Fee rate for trading (in basis points)
+    TradingFeeRate,    // Fee rate for trading (in basis points)
     RetirementFeeRate, // Fee rate for retirement (in basis points)
     TotalCreditsIssued,
     TotalCreditsRetired,
@@ -120,14 +120,22 @@ impl CarbonCreditRegistry {
         retirement_fee_rate: u32,
     ) {
         admin.require_auth();
-        
+
         env.storage().instance().set(&DataKey::Admin, &admin);
-        env.storage().instance().set(&DataKey::TradingFeeRate, &trading_fee_rate);
-        env.storage().instance().set(&DataKey::RetirementFeeRate, &retirement_fee_rate);
+        env.storage()
+            .instance()
+            .set(&DataKey::TradingFeeRate, &trading_fee_rate);
+        env.storage()
+            .instance()
+            .set(&DataKey::RetirementFeeRate, &retirement_fee_rate);
         env.storage().instance().set(&DataKey::IssuerCount, &0u32);
         env.storage().instance().set(&DataKey::CreditCount, &0u32);
-        env.storage().instance().set(&DataKey::TotalCreditsIssued, &0i128);
-        env.storage().instance().set(&DataKey::TotalCreditsRetired, &0i128);
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalCreditsIssued, &0i128);
+        env.storage()
+            .instance()
+            .set(&DataKey::TotalCreditsRetired, &0i128);
     }
 
     /// Register a new issuer
@@ -137,8 +145,7 @@ impl CarbonCreditRegistry {
         name: String,
         verification_standards: Vec<String>,
     ) {
-        let admin: Address = env.storage().instance().get(&DataKey::Admin)
-            .unwrap();
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
 
         let issuer_profile = IssuerProfile {
@@ -150,12 +157,19 @@ impl CarbonCreditRegistry {
             total_retired: 0,
         };
 
-        env.storage().instance().set(&DataKey::Issuer(issuer_address), &issuer_profile);
-        
-        let mut issuer_count: u32 = env.storage().instance().get(&DataKey::IssuerCount)
+        env.storage()
+            .instance()
+            .set(&DataKey::Issuer(issuer_address), &issuer_profile);
+
+        let mut issuer_count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::IssuerCount)
             .unwrap_or(0);
         issuer_count += 1;
-        env.storage().instance().set(&DataKey::IssuerCount, &issuer_count);
+        env.storage()
+            .instance()
+            .set(&DataKey::IssuerCount, &issuer_count);
     }
 
     /// Issue a new carbon credit
@@ -192,7 +206,9 @@ impl CarbonCreditRegistry {
         };
 
         // Store the credit
-        env.storage().instance().set(&DataKey::Credit(credit_id.clone()), &credit);
+        env.storage()
+            .instance()
+            .set(&DataKey::Credit(credit_id.clone()), &credit);
 
         // Record issuance event
         credits::record_credit_event(
@@ -205,66 +221,66 @@ impl CarbonCreditRegistry {
         );
 
         // Increment credit count
-        let mut credit_count: u32 = env.storage().instance().get(&DataKey::CreditCount)
+        let mut credit_count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::CreditCount)
             .unwrap_or(0);
         credit_count += 1;
-        env.storage().instance().set(&DataKey::CreditCount, &credit_count);
+        env.storage()
+            .instance()
+            .set(&DataKey::CreditCount, &credit_count);
 
         credit_id
     }
 
     /// Trade a carbon credit
-    pub fn trade_credit(
-        env: Env,
-        params: TradingParams,
-    ) {
+    pub fn trade_credit(env: Env, params: TradingParams) {
         trading::trade_credit(env, params)
     }
 
     /// Retire a carbon credit
-    pub fn retire_credit(
-        env: Env,
-        params: RetirementParams,
-    ) {
+    pub fn retire_credit(env: Env, params: RetirementParams) {
         trading::retire_credit(env, params)
     }
 
     /// Suspend a credit (admin only)
-    pub fn suspend_credit(
-        env: Env,
-        credit_id: BytesN<32>,
-        reason: String,
-    ) {
-        let admin: Address = env.storage().instance().get(&DataKey::Admin)
-            .unwrap();
+    pub fn suspend_credit(env: Env, credit_id: BytesN<32>, reason: String) {
+        let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
         admin.require_auth();
 
-        let mut credit: CarbonCredit = env.storage().instance().get(&DataKey::Credit(credit_id.clone()))
+        let mut credit: CarbonCredit = env
+            .storage()
+            .instance()
+            .get(&DataKey::Credit(credit_id.clone()))
             .unwrap();
 
         credit.status = CreditStatus::Suspended;
-        env.storage().instance().set(&DataKey::Credit(credit_id.clone()), &credit);
+        env.storage()
+            .instance()
+            .set(&DataKey::Credit(credit_id.clone()), &credit);
     }
 
     /// Get credit status and details
-    pub fn get_credit_status(
-        env: Env,
-        credit_id: BytesN<32>,
-    ) -> Option<CarbonCredit> {
+    pub fn get_credit_status(env: Env, credit_id: BytesN<32>) -> Option<CarbonCredit> {
         env.storage().instance().get(&DataKey::Credit(credit_id))
     }
 
     /// Get credit transaction history
-    pub fn get_credit_history(
-        env: Env,
-        credit_id: BytesN<32>,
-    ) -> Vec<CreditEvent> {
-        let event_count: u32 = env.storage().instance().get(&DataKey::EventCount(credit_id.clone()))
+    pub fn get_credit_history(env: Env, credit_id: BytesN<32>) -> Vec<CreditEvent> {
+        let event_count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::EventCount(credit_id.clone()))
             .unwrap_or(0);
 
         let mut events = Vec::new(&env);
         for i in 0..event_count {
-            if let Some(event) = env.storage().instance().get(&DataKey::CreditEvent(credit_id.clone(), i)) {
+            if let Some(event) = env
+                .storage()
+                .instance()
+                .get(&DataKey::CreditEvent(credit_id.clone(), i))
+            {
                 events.push_back(event);
             }
         }
@@ -273,22 +289,33 @@ impl CarbonCreditRegistry {
     }
 
     /// Get issuer profile
-    pub fn get_issuer_profile(
-        env: Env,
-        issuer_address: Address,
-    ) -> Option<IssuerProfile> {
-        env.storage().instance().get(&DataKey::Issuer(issuer_address))
+    pub fn get_issuer_profile(env: Env, issuer_address: Address) -> Option<IssuerProfile> {
+        env.storage()
+            .instance()
+            .get(&DataKey::Issuer(issuer_address))
     }
 
     /// Get contract statistics
     pub fn get_contract_stats(env: Env) -> (u32, u32, i128, i128) {
-        let issuer_count: u32 = env.storage().instance().get(&DataKey::IssuerCount)
+        let issuer_count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::IssuerCount)
             .unwrap_or(0);
-        let credit_count: u32 = env.storage().instance().get(&DataKey::CreditCount)
+        let credit_count: u32 = env
+            .storage()
+            .instance()
+            .get(&DataKey::CreditCount)
             .unwrap_or(0);
-        let total_issued: i128 = env.storage().instance().get(&DataKey::TotalCreditsIssued)
+        let total_issued: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::TotalCreditsIssued)
             .unwrap_or(0);
-        let total_retired: i128 = env.storage().instance().get(&DataKey::TotalCreditsRetired)
+        let total_retired: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::TotalCreditsRetired)
             .unwrap_or(0);
 
         (issuer_count, credit_count, total_issued, total_retired)

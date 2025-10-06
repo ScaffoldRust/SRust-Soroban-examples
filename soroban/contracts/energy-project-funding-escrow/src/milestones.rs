@@ -1,6 +1,6 @@
-use soroban_sdk::{Address, Env, String, Symbol, Vec};
 use crate::types::*;
-use crate::utils::{validate_milestone_data, calculate_milestone_funding};
+use crate::utils::{calculate_milestone_funding, validate_milestone_data};
+use soroban_sdk::{Address, Env, String, Symbol, Vec};
 
 pub fn create_milestone(
     env: Env,
@@ -16,7 +16,8 @@ pub fn create_milestone(
 ) -> u32 {
     creator.require_auth();
 
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -34,7 +35,8 @@ pub fn create_milestone(
     }
 
     let milestone_id = get_next_milestone_id(&env, project_id);
-    let funding_amount = calculate_milestone_funding(&env, project.total_funding, funding_percentage);
+    let funding_amount =
+        calculate_milestone_funding(&env, project.total_funding, funding_percentage);
 
     let milestone = MilestoneDetails {
         project_id,
@@ -67,7 +69,8 @@ pub fn create_milestone(
 pub fn start_milestone(env: Env, project_id: u64, milestone_id: u32, starter: Address) {
     starter.require_auth();
 
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -76,7 +79,8 @@ pub fn start_milestone(env: Env, project_id: u64, milestone_id: u32, starter: Ad
         panic!("Only project manager can start milestones");
     }
 
-    let mut milestone: MilestoneDetails = env.storage()
+    let mut milestone: MilestoneDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Milestone(project_id, milestone_id))
         .unwrap_or_else(|| panic!("Milestone not found"));
@@ -107,7 +111,8 @@ pub fn verify_milestone(
 ) {
     verifier.require_auth();
 
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -116,7 +121,8 @@ pub fn verify_milestone(
         panic!("Unauthorized to verify milestone");
     }
 
-    let mut milestone: MilestoneDetails = env.storage()
+    let mut milestone: MilestoneDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Milestone(project_id, milestone_id))
         .unwrap_or_else(|| panic!("Milestone not found"));
@@ -125,15 +131,23 @@ pub fn verify_milestone(
         panic!("Milestone is not in progress");
     }
 
-    if !milestone.required_verifications.contains(&verification_type) {
+    if !milestone
+        .required_verifications
+        .contains(&verification_type)
+    {
         panic!("Verification type not required");
     }
 
-    if milestone.completed_verifications.contains(&verification_type) {
+    if milestone
+        .completed_verifications
+        .contains(&verification_type)
+    {
         panic!("Verification already completed");
     }
 
-    milestone.completed_verifications.push_back(verification_type.clone());
+    milestone
+        .completed_verifications
+        .push_back(verification_type.clone());
 
     if milestone.completed_verifications.len() == milestone.required_verifications.len() {
         milestone.status = MilestoneStatus::Completed;
@@ -179,7 +193,8 @@ pub fn fail_milestone(
 ) {
     manager.require_auth();
 
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -188,7 +203,8 @@ pub fn fail_milestone(
         panic!("Only project manager can fail milestones");
     }
 
-    let mut milestone: MilestoneDetails = env.storage()
+    let mut milestone: MilestoneDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Milestone(project_id, milestone_id))
         .unwrap_or_else(|| panic!("Milestone not found"));
@@ -219,7 +235,8 @@ pub fn update_project_metrics(
 ) {
     updater.require_auth();
 
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -245,7 +262,12 @@ pub fn update_project_metrics(
 
     env.events().publish(
         (Symbol::new(&env, "MetricsUpdated"),),
-        (project_id, actual_energy_output, actual_carbon_offset, efficiency_rating),
+        (
+            project_id,
+            actual_energy_output,
+            actual_carbon_offset,
+            efficiency_rating,
+        ),
     );
 }
 
@@ -257,7 +279,8 @@ pub fn get_milestone_details(env: Env, project_id: u64, milestone_id: u32) -> Mi
 }
 
 pub fn get_project_milestones(env: Env, project_id: u64) -> Vec<MilestoneDetails> {
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -265,9 +288,11 @@ pub fn get_project_milestones(env: Env, project_id: u64) -> Vec<MilestoneDetails
     let mut milestones = Vec::new(&env);
 
     for i in 1..=project.milestone_count {
-        if let Some(milestone) = env.storage()
+        if let Some(milestone) = env
+            .storage()
             .persistent()
-            .get::<DataKey, MilestoneDetails>(&DataKey::Milestone(project_id, i)) {
+            .get::<DataKey, MilestoneDetails>(&DataKey::Milestone(project_id, i))
+        {
             milestones.push_back(milestone);
         }
     }
@@ -282,7 +307,8 @@ pub fn get_pending_release(env: Env, project_id: u64) -> Option<PendingRelease> 
 }
 
 pub fn calculate_project_progress(env: Env, project_id: u64) -> u32 {
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -290,9 +316,11 @@ pub fn calculate_project_progress(env: Env, project_id: u64) -> u32 {
     let mut completed_milestones = 0u32;
 
     for i in 1..=project.milestone_count {
-        if let Some(milestone) = env.storage()
+        if let Some(milestone) = env
+            .storage()
             .persistent()
-            .get::<DataKey, MilestoneDetails>(&DataKey::Milestone(project_id, i)) {
+            .get::<DataKey, MilestoneDetails>(&DataKey::Milestone(project_id, i))
+        {
             if milestone.status == MilestoneStatus::Completed {
                 completed_milestones += 1;
             }
@@ -307,7 +335,8 @@ pub fn calculate_project_progress(env: Env, project_id: u64) -> u32 {
 }
 
 fn get_next_milestone_id(env: &Env, project_id: u64) -> u32 {
-    let project: ProjectDetails = env.storage()
+    let project: ProjectDetails = env
+        .storage()
         .persistent()
         .get(&DataKey::Project(project_id))
         .unwrap_or_else(|| panic!("Project not found"));
@@ -315,10 +344,12 @@ fn get_next_milestone_id(env: &Env, project_id: u64) -> u32 {
     let mut next_id = 1u32;
 
     for i in 1..=project.milestone_count + 10 {
-        if env.storage()
+        if env
+            .storage()
             .persistent()
             .get::<DataKey, MilestoneDetails>(&DataKey::Milestone(project_id, i))
-            .is_none() {
+            .is_none()
+        {
             next_id = i;
             break;
         }
