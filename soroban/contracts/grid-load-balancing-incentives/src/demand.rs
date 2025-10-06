@@ -199,8 +199,22 @@ fn is_consumer_participating(env: &Env, event_id: u64, consumer: &Address) -> Re
     Ok(false)
 }
 
-fn generate_participation_id(env: &Env, event_id: u64, consumer: &Address) -> u64 {
-    // Simple ID generation based on event ID and consumer hash
-    let consumer_hash = consumer.to_string().len() as u64;
-    event_id * 10000 + consumer_hash + env.ledger().timestamp() % 1000
+fn generate_participation_id(env: &Env, event_id: u64, _consumer: &Address) -> u64 {
+    // Get current participation counter
+    let counter_key = DataKey::ParticipationCounter;
+    let current_counter: u64 = env
+        .storage()
+        .instance()
+        .get(&counter_key)
+        .unwrap_or(0u64);
+    
+    // Increment and store counter
+    let new_counter = current_counter + 1;
+    env.storage()
+        .instance()
+        .set(&counter_key, &new_counter);
+    
+    // Return unique ID combining event and counter
+    event_id * 1000000 + new_counter
+
 }
