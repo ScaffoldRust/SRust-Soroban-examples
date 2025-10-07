@@ -1,7 +1,10 @@
 #![cfg(test)]
 
-use crate::{PeerToPeerEnergySharing, PeerToPeerEnergySharingClient, utils::*};
-use soroban_sdk::{testutils::{Address as _, Ledger}, Address, Env};
+use crate::{utils::*, PeerToPeerEnergySharing, PeerToPeerEnergySharingClient};
+use soroban_sdk::{
+    testutils::{Address as _, Ledger},
+    Address, Env,
+};
 
 pub struct TestSetup {
     pub env: Env,
@@ -49,25 +52,27 @@ impl TestSetup {
             prosumer3,
         }
     }
-    
+
     pub fn advance_ledger_time(&self, seconds: u64) {
-        self.env.ledger().set_timestamp(self.env.ledger().timestamp() + seconds);
+        self.env
+            .ledger()
+            .set_timestamp(self.env.ledger().timestamp() + seconds);
     }
-    
+
     pub fn get_future_deadline(&self) -> u64 {
         self.env.ledger().timestamp() + 86400 // 1 day from now
     }
-    
+
     pub fn create_test_agreement(&self) -> u64 {
         self.client.create_agreement(
             &self.provider,
             &self.consumer,
-            &100u64,     // 100 kWh
-            &50u64,      // 50 units per kWh
+            &100u64, // 100 kWh
+            &50u64,  // 50 units per kWh
             &self.get_future_deadline(),
         )
     }
-    
+
     pub fn create_custom_agreement(
         &self,
         provider: &Address,
@@ -87,7 +92,8 @@ impl TestSetup {
 }
 
 pub fn create_test_token(env: &Env, admin: &Address) -> Address {
-    env.register_stellar_asset_contract_v2(admin.clone()).address()
+    env.register_stellar_asset_contract_v2(admin.clone())
+        .address()
 }
 
 pub fn mint_tokens(
