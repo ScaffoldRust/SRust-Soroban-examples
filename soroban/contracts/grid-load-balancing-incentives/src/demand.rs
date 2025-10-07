@@ -155,7 +155,11 @@ pub fn get_event(env: &Env, event_id: u64) -> Result<DemandResponseEvent, Incent
 }
 
 /// Complete an event (mark as completed)
-pub fn complete_event(env: &Env, event_id: u64, grid_operator: Address) -> Result<(), IncentiveError> {
+pub fn complete_event(
+    env: &Env,
+    event_id: u64,
+    grid_operator: Address,
+) -> Result<(), IncentiveError> {
     let mut events: Map<u64, DemandResponseEvent> = env
         .storage()
         .instance()
@@ -184,7 +188,11 @@ pub fn complete_event(env: &Env, event_id: u64, grid_operator: Address) -> Resul
 }
 
 // Helper functions
-fn is_consumer_participating(env: &Env, event_id: u64, consumer: &Address) -> Result<bool, IncentiveError> {
+fn is_consumer_participating(
+    env: &Env,
+    event_id: u64,
+    consumer: &Address,
+) -> Result<bool, IncentiveError> {
     let participations: Map<u64, ParticipationRecord> = env
         .storage()
         .instance()
@@ -202,19 +210,12 @@ fn is_consumer_participating(env: &Env, event_id: u64, consumer: &Address) -> Re
 fn generate_participation_id(env: &Env, event_id: u64, _consumer: &Address) -> u64 {
     // Get current participation counter
     let counter_key = DataKey::ParticipationCounter;
-    let current_counter: u64 = env
-        .storage()
-        .instance()
-        .get(&counter_key)
-        .unwrap_or(0u64);
-    
+    let current_counter: u64 = env.storage().instance().get(&counter_key).unwrap_or(0u64);
+
     // Increment and store counter
     let new_counter = current_counter + 1;
-    env.storage()
-        .instance()
-        .set(&counter_key, &new_counter);
-    
+    env.storage().instance().set(&counter_key, &new_counter);
+
     // Return unique ID combining event and counter
     event_id * 1000000 + new_counter
-
 }

@@ -69,7 +69,9 @@ impl GridLoadBalancingIncentives {
             .unwrap_or_else(|| Map::new(&env));
 
         consumers.set(consumer, true);
-        env.storage().instance().set(&DataKey::Consumers, &consumers);
+        env.storage()
+            .instance()
+            .set(&DataKey::Consumers, &consumers);
 
         Ok(())
     }

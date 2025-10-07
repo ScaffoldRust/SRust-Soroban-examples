@@ -17,11 +17,7 @@ pub fn distribute_rewards(
 
     // Verify authorization (grid operator or admin can distribute)
     let is_grid_operator = event.grid_operator == distributor;
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .unwrap();
+    let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
     let is_admin = admin == distributor;
 
     if !is_grid_operator && !is_admin {
@@ -48,7 +44,9 @@ pub fn distribute_rewards(
 
     // Process all participations for this event
     for (participation_id, mut participation) in participations.iter() {
-        if participation.event_id == event_id && participation.status == ParticipationStatus::Verified {
+        if participation.event_id == event_id
+            && participation.status == ParticipationStatus::Verified
+        {
             // Execute reward payment
             match execute_reward_payment(env, &participation) {
                 Ok(_) => {
@@ -96,11 +94,7 @@ fn execute_reward_payment(
         .ok_or(IncentiveError::RewardDistributionFailed)?;
 
     // Get admin as the source of rewards
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .unwrap();
+    let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
 
     // Execute transfer from admin to consumer
     // Note: This requires admin to have authorized the contract to transfer tokens
@@ -158,7 +152,10 @@ pub fn get_consumer_participations(
 }
 
 /// Audit reward distributions for transparency
-pub fn audit_event_rewards(env: &Env, event_id: u64) -> Result<Vec<ParticipationRecord>, IncentiveError> {
+pub fn audit_event_rewards(
+    env: &Env,
+    event_id: u64,
+) -> Result<Vec<ParticipationRecord>, IncentiveError> {
     let participations: Map<u64, ParticipationRecord> = env
         .storage()
         .instance()
@@ -192,11 +189,7 @@ pub fn reject_participation(
         .ok_or(IncentiveError::ParticipationNotFound)?;
 
     // Only admin or grid operator can reject
-    let admin: Address = env
-        .storage()
-        .instance()
-        .get(&DataKey::Admin)
-        .unwrap();
+    let admin: Address = env.storage().instance().get(&DataKey::Admin).unwrap();
 
     let events: Map<u64, DemandResponseEvent> = env
         .storage()
@@ -218,10 +211,8 @@ pub fn reject_participation(
         .instance()
         .set(&DataKey::Participations, &participations);
 
-    env.events().publish(
-        (symbol_short!("rejected"), participation_id),
-        rejector,
-    );
+    env.events()
+        .publish((symbol_short!("rejected"), participation_id), rejector);
 
     Ok(())
 }
