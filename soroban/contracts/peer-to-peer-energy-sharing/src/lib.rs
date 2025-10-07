@@ -5,7 +5,7 @@ mod sharing;
 mod utils;
 
 #[cfg(test)]
-mod test;
+mod tests;
 
 use soroban_sdk::{contract, contractimpl, Address, Env, Map, Vec};
 
