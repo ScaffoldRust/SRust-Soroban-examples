@@ -987,6 +987,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "peer-to-peer-energy-sharing"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.7",
+]
+
+[[package]]
 name = "pkcs8"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
