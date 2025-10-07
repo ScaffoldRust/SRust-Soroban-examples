@@ -1,7 +1,7 @@
 #![cfg(test)]
 
 use crate::{PeerToPeerEnergySharing, PeerToPeerEnergySharingClient, utils::*};
-use soroban_sdk::{testutils::Address as _, Address, Env};
+use soroban_sdk::{testutils::{Address as _, Ledger}, Address, Env};
 
 pub struct TestSetup {
     pub env: Env,
@@ -28,12 +28,12 @@ impl TestSetup {
         let client = PeerToPeerEnergySharingClient::new(&env, &contract_id);
 
         // Initialize contract
-        client.initialize(&admin, &token_contract).unwrap();
+        client.initialize(&admin, &token_contract);
 
         // Register prosumers
-        client.register_prosumer(&provider).unwrap();
-        client.register_prosumer(&consumer).unwrap();
-        client.register_prosumer(&prosumer3).unwrap();
+        client.register_prosumer(&provider);
+        client.register_prosumer(&consumer);
+        client.register_prosumer(&prosumer3);
 
         // Mint tokens for testing payments
         mint_tokens(&env, &token_contract, &admin, &consumer, 10_000_000);
@@ -58,7 +58,7 @@ impl TestSetup {
         self.env.ledger().timestamp() + 86400 // 1 day from now
     }
     
-    pub fn create_test_agreement(&self) -> Result<u64, SharingError> {
+    pub fn create_test_agreement(&self) -> u64 {
         self.client.create_agreement(
             &self.provider,
             &self.consumer,
@@ -75,7 +75,7 @@ impl TestSetup {
         energy_amount: u64,
         price_per_kwh: u64,
         deadline: u64,
-    ) -> Result<u64, SharingError> {
+    ) -> u64 {
         self.client.create_agreement(
             provider,
             consumer,
