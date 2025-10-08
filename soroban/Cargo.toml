@@ -1,7 +1,18 @@
 [workspace]
 resolver = "2"
 members = [
-  "contracts/*",
+
+  "contracts/amm-contract",
+  "contracts/cross-border-contract",
+  "contracts/payment-streaming",
+  "contracts/pharmaceutical-supply-chain-tracker",
+  "contracts/stablecoin-contract",
+  "contracts/telemedicine-payment-gateway",
+  "asset-tokenization-contract"
+]
+exclude = [
+  "contracts/secure-medical-records-sharing"
+
 ]
 
 [workspace.dependencies]

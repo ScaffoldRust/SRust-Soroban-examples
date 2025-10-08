@@ -1,123 +1,174 @@
-extern crate std;
 
-use soroban_sdk::{testutils::{Address as _, Ledger}, Address, Env, String, Vec};
-use crate::{SecureMedicalRecordsSharing, SecureMedicalRecordsSharingClient};
+use crate::{
+    SecureMedicalRecordsContract, SecureMedicalRecordsContractClient,
+    AccessLevel, SensitivityLevel, RecordMetadata, ProviderInfo
+};
+use soroban_sdk::{testutils::{Address as _, Ledger}, Address, BytesN, Env, String};
 
-/// Test fixture to hold common test setup
-pub struct TestFixture<'a> {
+/// Test environment setup
+pub struct TestEnvironment {
     pub env: Env,
-    pub client: SecureMedicalRecordsSharingClient<'a>,
+    pub contract: SecureMedicalRecordsContractClient<'static>,
+    pub admin: Address,
     pub patient: Address,
-    pub provider: Address,
+    pub provider1: Address,
     pub provider2: Address,
-    pub unauthorized: Address,
+    pub emergency_contact: Address,
 }
 
-impl<'a> TestFixture<'a> {
-    /// Create a new test fixture with initialized contract
+impl TestEnvironment {
     pub fn new() -> Self {
         let env = Env::default();
-        let contract_id = env.register(SecureMedicalRecordsSharing, ());
-        let client = SecureMedicalRecordsSharingClient::new(&env, &contract_id);
-
-        client.initialize();
-
+        env.mock_all_auths();
+        
+        let contract_id = env.register(SecureMedicalRecordsContract, ());
+        let contract = SecureMedicalRecordsContractClient::new(&env, &contract_id);
+        
+        let admin = Address::generate(&env);
         let patient = Address::generate(&env);
-        let provider = Address::generate(&env);
+        let provider1 = Address::generate(&env);
         let provider2 = Address::generate(&env);
-        let unauthorized = Address::generate(&env);
-
-        Self {
+        let emergency_contact = Address::generate(&env);
+        
+        // Initialize the contract
+        contract.initialize(&admin, &None);
+        
+        // Register providers
+        let provider1_info = create_test_provider_info(&env, "LIC001", "Dr. Alice Smith", "Cardiology", true, true);
+        let provider2_info = create_test_provider_info(&env, "LIC002", "Dr. Bob Jones", "Neurology", true, false);
+        
+        contract.register_provider(&admin, &provider1, &provider1_info);
+        contract.register_provider(&admin, &provider2, &provider2_info);
+        
+        TestEnvironment {
             env,
-            client,
+            contract,
+            admin,
             patient,
-            provider,
+            provider1,
             provider2,
-            unauthorized,
+            emergency_contact,
         }
     }
-
-    /// Helper to create a medical record
-    pub fn create_record(&self, data_type: &str, pointer: &str) -> u64 {
-        let data_type_str = String::from_str(&self.env, data_type);
-        let pointer_str = String::from_str(&self.env, pointer);
-        self.client.add_record(&self.patient, &data_type_str, &pointer_str)
+    
+    /// Create a test medical record
+    pub fn create_test_record(&self, record_type: &str, sensitivity: SensitivityLevel) -> BytesN<32> {
+        let record_hash = BytesN::from_array(&self.env, &[0u8; 32]);
+        let metadata = create_test_metadata(&self.env, "Test Record", "Test Description", sensitivity);
+        
+        self.contract.create_record(
+            &self.patient,
+            &record_hash,
+            &String::from_str(&self.env, record_type),
+            &metadata,
+        )
     }
-
-    /// Helper to create a medical record with custom patient
-    pub fn create_record_for(&self, patient: &Address, data_type: &str, pointer: &str) -> u64 {
-        let data_type_str = String::from_str(&self.env, data_type);
-        let pointer_str = String::from_str(&self.env, pointer);
-        self.client.add_record(patient, &data_type_str, &pointer_str)
-    }
-
-    /// Helper to grant access to a provider
-    pub fn grant_access(&self, data_types: std::vec::Vec<&str>, expires_at: u64) {
-        let types = self.str_vec_to_string_vec(data_types);
-        self.client.grant_access(&self.patient, &self.provider, &types, &expires_at);
-    }
-
-    /// Helper to grant access to a specific provider
-    pub fn grant_access_to(&self, provider: &Address, data_types: std::vec::Vec<&str>, expires_at: u64) {
-        let types = self.str_vec_to_string_vec(data_types);
-        self.client.grant_access(&self.patient, provider, &types, &expires_at);
-    }
-
-    /// Helper to grant access from specific patient to specific provider
-    pub fn grant_access_from_to(&self, patient: &Address, provider: &Address, data_types: std::vec::Vec<&str>, expires_at: u64) {
-        let types = self.str_vec_to_string_vec(data_types);
-        self.client.grant_access(patient, provider, &types, &expires_at);
-    }
-
-    /// Helper to verify access
-    pub fn verify_access(&self, data_type: &str) -> bool {
-        let data_type_str = String::from_str(&self.env, data_type);
-        self.client.verify_access(&self.patient, &self.provider, &data_type_str)
-    }
-
-    /// Helper to get a record
-    pub fn get_record(&self, record_id: u64) -> crate::MedicalRecord {
-        self.client.get_record(&self.patient, &self.patient, &record_id)
-    }
-
-    /// Helper to get a record as a provider
-    pub fn get_record_as_provider(&self, record_id: u64) -> crate::MedicalRecord {
-        self.client.get_record(&self.provider, &self.patient, &record_id)
-    }
-
-    /// Helper to convert Vec<&str> to Vec<String>
-    pub fn str_vec_to_string_vec(&self, strs: std::vec::Vec<&str>) -> Vec<String> {
-        let mut result = Vec::new(&self.env);
-        for s in strs {
-            result.push_back(String::from_str(&self.env, s));
-        }
-        result
-    }
-
-    /// Helper to create a string
-    pub fn string(&self, s: &str) -> String {
-        String::from_str(&self.env, s)
-    }
-
-    /// Get current timestamp
-    pub fn now(&self) -> u64 {
-        self.env.ledger().timestamp()
-    }
-
-    /// Advance time by seconds
+    
+    /// Fast forward time by specified seconds
     pub fn advance_time(&self, seconds: u64) {
-        self.env.ledger().with_mut(|li| {
-            li.timestamp = li.timestamp + seconds;
-        });
+        let current_time = self.env.ledger().timestamp();
+        self.env.ledger().set_timestamp(current_time + seconds);
     }
-
-    /// Helper to add emergency provider
-    pub fn add_emergency_provider(&self) {
-        self.client.add_emergency_provider(&self.patient, &self.provider);
+    
+    /// Generate a non-existent record ID for testing
+    pub fn generate_fake_record_id(&self) -> BytesN<32> {
+        BytesN::from_array(&self.env, &[0xFFu8; 32])
     }
-
-    /// Helper to get audit log
-    pub fn get_audit_log(&self) -> Vec<crate::AuditEvent> {
-        self.client.get_audit_log(&self.patient, &self.patient)
+    
+    /// Create multiple test records for bulk operations
+    pub fn create_multiple_records(&self, count: u32, record_type: &str) -> soroban_sdk::Vec<BytesN<32>> {
+        let mut records = soroban_sdk::Vec::new(&self.env);
+        
+        for i in 0..count {
+            let mut hash = [0u8; 32];
+            hash[0] = (i & 0xFF) as u8;
+            hash[1] = ((i >> 8) & 0xFF) as u8;
+            
+            let record_hash = BytesN::from_array(&self.env, &hash);
+            let metadata = create_test_metadata(&self.env, "Test Record", "Test Description", SensitivityLevel::Medium);
+            
+            let record_id = self.contract.create_record(
+                &self.patient,
+                &record_hash,
+                &String::from_str(&self.env, record_type),
+                &metadata,
+            );
+            
+            records.push_back(record_id);
+        }
+        
+        records
     }
 }
+
+/// Create test provider information
+pub fn create_test_provider_info(
+    env: &Env,
+    license: &str,
+    name: &str,
+    specialty: &str,
+    verified: bool,
+    emergency_contact: bool,
+) -> ProviderInfo {
+    ProviderInfo {
+        license_number: String::from_str(env, license),
+        name: String::from_str(env, name),
+        specialty: String::from_str(env, specialty),
+        organization: String::from_str(env, "Test Hospital"),
+        verified,
+        verification_date: env.ledger().timestamp(),
+        emergency_contact,
+    }
+}
+
+/// Create test record metadata
+pub fn create_test_metadata(
+    env: &Env,
+    title: &str,
+    description: &str,
+    sensitivity: SensitivityLevel,
+) -> RecordMetadata {
+    RecordMetadata {
+        title: String::from_str(env, title),
+        description: String::from_str(env, description),
+        provider_id: None,
+        category: String::from_str(env, "General"),
+        sensitivity_level: sensitivity,
+        retention_period: 365 * 24 * 60 * 60, // 1 year in seconds
+        patient_notes: Some(String::from_str(env, "Patient notes")),
+    }
+}
+
+/// Create test record with specific hash
+pub fn create_record_with_hash(env: &Env, hash_bytes: [u8; 32]) -> BytesN<32> {
+    BytesN::from_array(env, &hash_bytes)
+}
+
+/// Helper to generate unique record hashes for testing
+pub fn generate_test_hash(seed: u32) -> [u8; 32] {
+    let mut hash = [0u8; 32];
+    hash[0] = (seed & 0xFF) as u8;
+    hash[1] = ((seed >> 8) & 0xFF) as u8;
+    hash[2] = ((seed >> 16) & 0xFF) as u8;
+    hash[3] = ((seed >> 24) & 0xFF) as u8;
+    hash
+}
+
+/// Constants for testing
+pub const ONE_HOUR: u64 = 60 * 60;
+pub const ONE_DAY: u64 = 24 * 60 * 60;
+pub const ONE_WEEK: u64 = 7 * 24 * 60 * 60;
+pub const ONE_MONTH: u64 = 30 * 24 * 60 * 60;
+pub const ONE_YEAR: u64 = 365 * 24 * 60 * 60;
+
+/// Test record types
+pub const RECORD_TYPE_LAB_RESULT: &str = "lab_result";
+pub const RECORD_TYPE_PRESCRIPTION: &str = "prescription";
+pub const RECORD_TYPE_DIAGNOSIS: &str = "diagnosis";
+pub const RECORD_TYPE_EMERGENCY: &str = "emergency_record";
+
+/// Helper to create unregistered provider address
+pub fn create_unregistered_provider(env: &Env) -> Address {
+    Address::generate(env)
+}
+
