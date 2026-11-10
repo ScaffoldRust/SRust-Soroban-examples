@@ -86,11 +86,7 @@ pub fn verify_reduction(
     }
 
     // Calculate reduction achieved
-    let reduction_achieved_kw = if baseline_usage_kw > actual_usage_kw {
-        baseline_usage_kw - actual_usage_kw
-    } else {
-        0
-    };
+    let reduction_achieved_kw = baseline_usage_kw.saturating_sub(actual_usage_kw);
 
     // Require some minimum reduction
     if reduction_achieved_kw == 0 {
@@ -155,6 +151,7 @@ pub fn get_event(env: &Env, event_id: u64) -> Result<DemandResponseEvent, Incent
 }
 
 /// Complete an event (mark as completed)
+#[cfg(test)]
 pub fn complete_event(
     env: &Env,
     event_id: u64,
