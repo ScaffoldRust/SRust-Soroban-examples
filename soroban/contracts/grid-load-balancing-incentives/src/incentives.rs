@@ -152,6 +152,7 @@ pub fn get_consumer_participations(
 }
 
 /// Audit reward distributions for transparency
+#[cfg(test)]
 pub fn audit_event_rewards(
     env: &Env,
     event_id: u64,
@@ -173,6 +174,7 @@ pub fn audit_event_rewards(
 }
 
 /// Reject a participation (for disputed meter readings)
+#[cfg(test)]
 pub fn reject_participation(
     env: &Env,
     participation_id: u64,
