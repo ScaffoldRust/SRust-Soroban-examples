@@ -116,8 +116,6 @@ mod tests {
 
     #[test]
     fn test_generate_rec_id() {
-        use soroban_sdk::testutils::Ledger as _;
-
         let env = Env::default();
         let issuer = Address::generate(&env);
         let verification_hash1 = BytesN::from_array(&env, &[1u8; 32]);
