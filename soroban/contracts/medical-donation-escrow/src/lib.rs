@@ -169,4 +169,4 @@ impl MedicalDonationEscrow {
 }
 
 #[cfg(test)]
-mod test;
+mod tests;
