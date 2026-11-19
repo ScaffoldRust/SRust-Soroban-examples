@@ -15,8 +15,6 @@ pub fn update_compliance_status(
     user: &Address,
     status: ComplianceStatus,
 ) -> bool {
-    admin_addr.require_auth();
-    
     // Verify admin privileges
     if !admin::is_admin(env, admin_addr) {
         panic!("Unauthorized: Only admins can update compliance status");
