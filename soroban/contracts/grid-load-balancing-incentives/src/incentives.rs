@@ -99,11 +99,14 @@ fn execute_reward_payment(
     // Execute transfer from admin to consumer
     // Note: This requires admin to have authorized the contract to transfer tokens
     let token_client = token::Client::new(env, &token_contract);
-    token_client.transfer(
+    match token_client.transfer(
         &admin,
         &participation.consumer,
         &(participation.reward_amount as i128),
-    );
+    ) {
+        Ok(_) => (),
+        Err(_) => return Err(IncentiveError::RewardDistributionFailed),
+    }
 
     // Emit payment event
     env.events().publish(
@@ -215,4 +218,4 @@ pub fn reject_participation(
         .publish((symbol_short!("rejected"), participation_id), rejector);
 
     Ok(())
-}
+}
