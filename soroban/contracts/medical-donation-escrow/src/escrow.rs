@@ -97,7 +97,7 @@ pub fn initialize(
         .set(&storage_key_donation(donation_id), &donation);
 
     // Add to user's donation list
-    add_user_donation(env, &donor, donation_id);
+    add_user_donation(env, donor.clone(), donation_id);
 }
 
 pub fn deposit(env: &Env, donation_id: u64, donor: Address, amount: i128, token: Symbol) {
@@ -202,18 +202,16 @@ pub fn resume_donation(env: &Env, donation_id: u64, admin: Address) {
         .set(&storage_key_donation(donation_id), &donation);
 }
 
-fn add_user_donation(env: &Env, user: &Address, donation_id: u64) {
+fn add_user_donation(env: &Env, user: Address, donation_id: u64) {
     let mut user_donations = get_user_donations(env, user.clone());
     user_donations.push_back(donation_id);
     env.storage()
         .persistent()
-        .set(&storage_key_user_donations(user), &user_donations);
+        .set(&storage_key_user_donations(&user), &user_donations);
 }
 
 pub fn storage_key_donation(donation_id: u64) -> (Symbol, u64) {
     (DONATIONS, donation_id)
 }
 
-fn storage_key_user_donations(user: &Address) -> (Symbol, Address) {
-    (USER_DONATIONS, user.clone())
-}
+fn storage_key_user_donations(user: &Address) ->
