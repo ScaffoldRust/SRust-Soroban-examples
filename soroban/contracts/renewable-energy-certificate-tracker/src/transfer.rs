@@ -44,6 +44,11 @@ pub fn transfer_rec(
         panic!("Insufficient capacity");
     }
 
+    // Ensure full capacity transfer; partial transfers are not supported
+    if capacity_mwh != rec.capacity_mwh {
+        panic!("Can only transfer full REC capacity");
+    }
+
     // Verify sender and recipient are different
     if from == to {
         panic!("Cannot transfer to self");
@@ -185,4 +190,4 @@ pub fn can_retire(env: &Env, rec_id: BytesN<32>, owner: &Address) -> bool {
     } else {
         false
     }
-}
+}
